@@ -7,7 +7,9 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
 import javax.mail.MessagingException;
+
 import org.quartz.CronExpression;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.JobDetail;
@@ -21,13 +23,17 @@ import org.quartz.impl.StdSchedulerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean;
 import org.springframework.stereotype.Component;
+
 import com.ibm.icu.text.SimpleDateFormat;
 import com.dao.DoctorDAO;
 import com.util.Property;
 import com.service.CreatePDFService;
 import com.service.SendmailService;
+
 import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
 
 @Component
 public class GenReportAndMailProcess {
@@ -61,7 +67,7 @@ public class GenReportAndMailProcess {
 		// กรณีพบว่า ต้องทำงานเพิ่ม เปลี่ยน cron
 		if (n_re > 0) {
 			// Job[1] คืนค่า > 0 (ยังเหลือผู้รับ) -> doSetTimeScherdule วันถัดไป -> Job[2]
-			System.out.println("\n\nจำนวนที่ต้องส่งทั้งหมดวันนี้ 	:	" + n_re + "	คน");
+			System.out.println("\n\nจำนวนที่ต้องส่งทั้งหมดวันนี้ 	" + n_re + "คน");
 			System.out.println("\n\nIt has begun...!");
 			System.out.println("\nDo Day >>> " + day + "\n");
 			try {
@@ -316,7 +322,7 @@ public class GenReportAndMailProcess {
 								// TODO Auto-generated catch block
 								System.out.println("Error from method loopSend Check sendmailService.sendmail");
 							}
-
+							// s.sendmail(email[0], email[1], userReciverMail, c.createFilePDF(listJasper));
 							try {
 								DoctorDAO.SendMailPaymentSuccess(code_doctor);
 							} catch (SQLException | IOException e) {

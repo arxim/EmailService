@@ -24,6 +24,7 @@ import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import net.sf.jasperreports.export.SimplePdfExporterConfiguration;
 import net.sf.jasperreports.export.SimplePdfReportConfiguration;
 import com.util.Property;
+import com.dao.BatchDao;
 
 public class CreatePDFService {
 
@@ -85,13 +86,25 @@ public class CreatePDFService {
 		String to_doctor = code_doctor;
 		String doctor = code_doctor;
 		String hospitalCode = Property.getCenterProperty("/application.properties").getProperty("hospitalCode");
-		String yyyy = Property.getCenterProperty("/application.properties").getProperty("yyyy");
+		// String yyyy =
+		// Property.getCenterProperty("/application.properties").getProperty("yyyy");
 		String to_date = Property.getCenterProperty("/application.properties").getProperty("to_date");
 		String from_date = Property.getCenterProperty("/application.properties").getProperty("from_date");
-		String mm = Property.getCenterProperty("/application.properties").getProperty("mm");
+		// String mm =
+		// Property.getCenterProperty("/application.properties").getProperty("mm");
 		String absoluteDiskPath = new File(CreatePDFService.class.getClass().getResource("/jasperReport").getFile())
 				.getPath().toString();
 		System.out.println("PATH report >> " + absoluteDiskPath);
+
+		String mm = null;
+		String yyyy = null;
+		try {
+			mm = BatchDao.getMonth(hospitalCode);
+			yyyy = BatchDao.getYear(hospitalCode);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		Map<String, Object> params = new HashMap<String, Object>();
 		// รับค่า จาก Property
@@ -210,7 +223,7 @@ public class CreatePDFService {
 			n_row = SummaryRevenueByDetailDAO.getNSummaryDFUnpaidByDetailAsOfDate(code_doctor);
 			break;
 		}
-		System.out.println("check row in method getNRowReport Success");
+		System.out.println("\ncheck row in method getNRowReport Success");
 
 		return n_row;
 

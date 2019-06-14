@@ -19,8 +19,17 @@ public class SummaryRevenueByDetailDAO {
 		String from_doctor = code_doctor;
 		String to_doctor = code_doctor;
 		String hospitalCode = Property.getCenterProperty("/application.properties").getProperty("hospitalCode");
-		String yyyy = Property.getCenterProperty("/application.properties").getProperty("yyyy");
-		String mm = Property.getCenterProperty("/application.properties").getProperty("mm");
+		//String yyyy = Property.getCenterProperty("/application.properties").getProperty("yyyy");
+		//String mm = Property.getCenterProperty("/application.properties").getProperty("mm");
+		String mm = null;
+		String yyyy = null;
+		try {
+			mm = BatchDao.getMonth(hospitalCode);
+			yyyy = BatchDao.getYear(hospitalCode);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		// แสดงค่าที่ต้องการ
 		checkFile = new ArrayList<>();
