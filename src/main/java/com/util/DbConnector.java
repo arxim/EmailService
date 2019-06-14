@@ -15,8 +15,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
+import java.sql.SQLException;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import com.service.SendmailService;
 
 public class DbConnector {
 	private static Connection conn;

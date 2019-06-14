@@ -34,13 +34,15 @@ import net.sf.jasperreports.engine.JasperPrint;
 
 @Component
 public class GenReportAndMailProcess {
-	// Test
+
 	int n_re;
 	int day = 15;
+	// int day = 1;// Test
 	String key = "open";
 
 	// กระตุ้นงานด้วย Scheduled anotation ->method start() ทำงาน -> เกิดJob[1]
-	@Scheduled(cron = "0 59 1 15 * ?")
+	// @Scheduled(cron = "0 0/7 2 15 * ?")//Test
+	@Scheduled(cron = "0 0 2 15 * ?")
 	public void start()
 			throws ClassNotFoundException, NoSuchMethodException, SchedulerException, ParseException, SQLException {
 
@@ -57,7 +59,8 @@ public class GenReportAndMailProcess {
 			System.out.println("\nDo Day >>> " + day + "\n");
 
 			deleteScheduler();
-			setSchedule("0 0 2 " + day + " * ?");
+			// setSchedule("0 " + day + " 2 15 * ?");// Test
+			setSchedule("20 0 2 " + day + " * ?");
 
 		}
 		if (n_re == 0) {
@@ -65,6 +68,7 @@ public class GenReportAndMailProcess {
 			System.out.println("\n3.-------------------End--------------------");
 			deleteScheduler();
 			// เปิด key เมื่อ job ทำงานเสร็จ
+			// day = 1;// Test
 			day = 15;
 			key = "open";
 		}
@@ -152,7 +156,6 @@ public class GenReportAndMailProcess {
 
 	}
 
-	// Test
 	int n_reciver;
 	int sent;
 
@@ -262,10 +265,13 @@ public class GenReportAndMailProcess {
 			System.out.println("2.Continueu");
 		}
 
-		// n_re = 800;
 		// สร้าง key = close ปิดkey
 		key = "close";
 		n_re = n_re2;
+
+		/*
+		 * if (day == 5) { n_re = 0; } // Test
+		 */
 		day = day + 1;
 		// กลับมายัง method start() -> check ว่า n_re =0 ?
 		start();

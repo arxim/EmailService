@@ -18,8 +18,7 @@ public class SummaryRevenueByDetailDAO {
 
 		String from_doctor = code_doctor;
 		String to_doctor = code_doctor;
-		String hospitalCode = Property.getCenterProperty("/application.properties")
-				.getProperty("hospitalCode");
+		String hospitalCode = Property.getCenterProperty("/application.properties").getProperty("hospitalCode");
 		String yyyy = Property.getCenterProperty("/application.properties").getProperty("yyyy");
 		String mm = Property.getCenterProperty("/application.properties").getProperty("mm");
 

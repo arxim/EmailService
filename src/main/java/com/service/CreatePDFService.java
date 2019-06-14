@@ -83,23 +83,20 @@ public class CreatePDFService {
 		String from_doctor = code_doctor;
 		String to_doctor = code_doctor;
 		String doctor = code_doctor;
-		String hospitalCode = Property.getCenterProperty("/application.properties")
-				.getProperty("hospitalCode");
+		String hospitalCode = Property.getCenterProperty("/application.properties").getProperty("hospitalCode");
 		String yyyy = Property.getCenterProperty("/application.properties").getProperty("yyyy");
 		String to_date = Property.getCenterProperty("/application.properties").getProperty("to_date");
 		String from_date = Property.getCenterProperty("/application.properties").getProperty("from_date");
 		String mm = Property.getCenterProperty("/application.properties").getProperty("mm");
 		String absoluteDiskPath = new File(Property.class.getClassLoader()
-				.getResource(
-						Property.getCenterProperty("/application.properties").getProperty("absoluteDiskPath"))
+				.getResource(Property.getCenterProperty("/application.properties").getProperty("absoluteDiskPath"))
 				.getFile()).getAbsoluteFile().toString();
 
 		Map<String, Object> params = new HashMap<String, Object>();
 
 		// รับค่า จาก Property
 
-		String[] rows = Property.getCenterProperty("/application.properties").getProperty("jasperFiles")
-				.split(",");
+		String[] rows = Property.getCenterProperty("/application.properties").getProperty("jasperFiles").split(",");
 
 		for (int j = 0; j < rows.length; j++) {
 
