@@ -18,8 +18,8 @@ public class PaymentVoucherDAO {
 
 		String from_doctor = code_doctor;
 		String to_doctor = code_doctor;
-		String yyyy = Property.getCenterProperty("/property/application.properties").getProperty("yyyy");
-		String mm = Property.getCenterProperty("/property/application.properties").getProperty("mm");
+		String yyyy = Property.getCenterProperty("/application.properties").getProperty("yyyy");
+		String mm = Property.getCenterProperty("/application.properties").getProperty("mm");
 
 		PreparedStatement ps = null;
 		String sql = "SELECT PM.YYYY,PM.MM, PM.TRANSACTION_DATE, PM.SUM_AMT, PM.DR_SUM_AMT, PM.HP_SUM_AMT,\r\n"

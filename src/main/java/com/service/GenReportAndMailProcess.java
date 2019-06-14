@@ -2,46 +2,176 @@ package com.service;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.mail.MessagingException;
+
+import org.quartz.CronExpression;
+import org.quartz.CronScheduleBuilder;
+import org.quartz.JobDetail;
+import org.quartz.JobKey;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.SchedulerFactory;
+import org.quartz.Trigger;
+import org.quartz.TriggerBuilder;
+import org.quartz.impl.StdSchedulerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean;
 import org.springframework.stereotype.Component;
 
+import com.ibm.icu.text.SimpleDateFormat;
 import com.dao.DoctorDAO;
 import com.util.Property;
+import com.service.CreatePDFService;
+import com.service.SendmailService;
+
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperPrint;
 
 @Component
 public class GenReportAndMailProcess {
+	// Test
+	int n_re;
+	int day = 15;
+	String key = "open";
 
-	public static void main(String[] args)
-			throws JRException, IOException, MessagingException, SQLException {
-		/*
-		 * ArrayList<HashMap<String,String>> listDoctor = sm.getNRecive(); for (int i =
-		 * 0; i < listDoctor.size(); i++) { String name =
-		 * listDoctor.get(i).get("NAME_THAI"); }
-		 */
+	// กระตุ้นงานด้วย Scheduled anotation ->method start() ทำงาน -> เกิดJob[1]
+	@Scheduled(cron = "0 59 1 15 * ?")
+	public void start()
+			throws ClassNotFoundException, NoSuchMethodException, SchedulerException, ParseException, SQLException {
 
-		System.out.println("Send mail....\n");
-		loopSend();
+		// เก็บจำนวนทั้งหมดตอนเริ่มต้น เพื่อให้ cron ทำงานในวันแรก
+		if (key.equals("open")) {
+			n_re = DoctorDAO.getNReciver();
+		}
+
+		// change cron
+		// กรณีพบว่า ต้องทำงานเพิ่ม เปลี่ยน cron
+		if (n_re > 0) {
+			// Job[1] คืนค่า > 0 (ยังเหลือผู้รับ) -> doSetTimeScherdule วันถัดไป -> Job[2]
+			System.out.println("\n\n1.It has begun...!");
+			System.out.println("\nDo Day >>> " + day + "\n");
+
+			deleteScheduler();
+			setSchedule("0 0 2 " + day + " * ?");
+
+		}
+		if (n_re == 0) {
+			// เปลี่ยนกุญแจ เป็นเปิดเมื่อ ทำจนเสร็จ รอวันถัดไป เพื่อรอรค่าหมอทั้งหมด
+			System.out.println("\n3.-------------------End--------------------");
+			deleteScheduler();
+			// เปิด key เมื่อ job ทำงานเสร็จ
+			day = 15;
+			key = "open";
+		}
 
 	}
 
+	// method สร้าง job detail
+	private static JobDetail createJob(GenReportAndMailProcess worker, String identity)
+			throws ClassNotFoundException, NoSuchMethodException {
+
+		MethodInvokingJobDetailFactoryBean jobDetail = new MethodInvokingJobDetailFactoryBean();
+
+		// set object งานลงไป
+		jobDetail.setTargetObject(worker);
+
+		// บอกว่าจะให้ทำที่ method ไหน ของ object นั้น ในที่นี้คือให้ทำที่ method
+		// loppSend
+		jobDetail.setTargetMethod("loopSend");
+
+		// ระบุคีย์ โดยจะต้องไม่ซ้ำกัน
+		jobDetail.setName(identity);
+		jobDetail.setConcurrent(false);
+		jobDetail.afterPropertiesSet();
+		return jobDetail.getObject();
+
+	}
+
+	// method สร้าง trigger
+	private static Trigger createTrigger(String identity, String cronExp) throws ParseException {
+		// ตั้งเวลา จากตัวอย่างคือ ทุกๆ 5 วินาที
+		CronExpression cx = new CronExpression(cronExp);
+		CronScheduleBuilder atHourAndMinuteOnGivenDaysOfWeek = CronScheduleBuilder.cronSchedule(cx);
+		return TriggerBuilder.newTrigger().withSchedule(atHourAndMinuteOnGivenDaysOfWeek) // set เวลา
+				.withIdentity(identity) // ระบุคีย์ trigger โดยจะต้องไม่ซ้ำกัน
+				.startNow().build();
+	}
+
+	public void setSchedule(String cronExp)
+			throws SchedulerException, ClassNotFoundException, NoSuchMethodException, ParseException {
+
+		// get schedule
+		SchedulerFactory sf = new StdSchedulerFactory();
+		Scheduler sched = sf.getScheduler();
+
+		sched = sf.getScheduler();
+
+		// สร้าง object หรือ งานที่จะให้ ทำตาม scheduler
+		GenReportAndMailProcess worker = new GenReportAndMailProcess();
+
+		// สร้าง job detail เพื่อบอกรายละเอียดงานที่จะให้ทำ พร้อมระบุ id ของ job นั้น
+		// โดยจะต้องมี id ไม่ซ้ำกันด้วย
+		JobDetail job = createJob(worker, "workJob1");
+
+		// สร้าง trigger คือตัวตั้งเวลาการทำงาน ว่าจะให้ทำตอนไหน พร้อมระบุ id ของ
+		// trigger นั้น
+		Trigger trigger = createTrigger("workTrigger1", cronExp);
+
+		// นำ job และ trigger ยัดลงใน schedule
+		sched.scheduleJob(job, trigger);
+
+		// start งานนั้น ให้เริ่มทำงาน
+		sched.start();
+
+	}
+
+	// ฟังชัน ลบงานใน Schdule
+	public void deleteScheduler() throws SchedulerException {
+
+		/*
+		 * SchedulerFactory sf = new StdSchedulerFactory(); Scheduler sched =
+		 * sf.getScheduler();
+		 */
+		try {
+			SchedulerFactory sf = new StdSchedulerFactory();
+			Scheduler sched = sf.getScheduler();
+
+			JobKey jobkey = new JobKey("workJob1");
+			sched.deleteJob(jobkey); // ลบ job นั้นๆ
+
+		} catch (SchedulerException ex) {
+
+		}
+
+		System.out.println("Delete Job Key OK !!!");
+
+	}
+
+	// Test
+	int n_reciver;
+	int sent;
+
 	// อังกอริทึมสำหรับวนลูปส่งเมล์ทีละ ตามจำนวนสูงสุดของผู้ส่ง
-	public static int loopSend()
-			throws JRException, IOException, MessagingException, SQLException {
+	public void loopSend() throws JRException, IOException, MessagingException, SQLException, ClassNotFoundException,
+			NoSuchMethodException, SchedulerException, ParseException {
+
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+		Date now = new Date();
+		String strDate = sdf.format(now);
+		System.out.println("\nJava cron job expression:: " + strDate + "\n");
 
 		// account เก็บ อีเมล์ ผู้ส่งจาก data.properties
-		String[] account = Property.getCenterProperty("/property/application.properties").getProperty("sendersMail")
-				.split(",");
+		String[] account = Property.getCenterProperty("/application.properties").getProperty("sendersMail").split(",");
 		// reciver มีชนิดเป็น int เก็บจำนวนหมอที่ยังไม่ถูกส่งจดหมาย
-		int n_reciver = DoctorDAO.getNReciver();
+		n_reciver = DoctorDAO.getNReciver();
 
 		// จำนวนการส่งสูงสุดของ Sender
-		int sent = Integer
-				.parseInt(Property.getCenterProperty("/property/application.properties").getProperty("Nsend"));
+		sent = Integer.parseInt(Property.getCenterProperty("/application.properties").getProperty("Nsend"));
 		// นับจำนวนที่ถูกส่งไปแล้ว เริ่มต้นยังไม่ถูกส่ง sened = 0
 		int n_sent = 0;
 		// เริ่มต้นวนแอคเค๊าที่จะใช้ส่ง i เริ่มต้นที่ 0 หมายถึง ใช้ อีเมล์ index ที่ 0
@@ -70,7 +200,7 @@ public class GenReportAndMailProcess {
 
 						// Test
 						// jasperFiles เก็บไฟล์ jasper เป็น string array
-						String[] jasperFiles = Property.getCenterProperty("/property/application.properties")
+						String[] jasperFiles = Property.getCenterProperty("/application.properties")
 								.getProperty("jasperFiles").split(",");
 
 						// เก็บชื่อไฟล์ที่หมอจะต้องทำไว้ใน list
@@ -97,6 +227,7 @@ public class GenReportAndMailProcess {
 
 							// Mutireciver
 							List<String> userReciverMail = new ArrayList<String>();
+							// userReciverMail.add(mail_doctor);
 							userReciverMail.add("springbootrecive@gmail.com");
 							userReciverMail.add("wintazaza@gmail.com");
 							userReciverMail.add("spittayakorn@gmail.com");
@@ -124,7 +255,20 @@ public class GenReportAndMailProcess {
 		System.out.println("\nจำนวนผู้รับทั้งหมด 	:	" + DoctorDAO.getNReciver() + "	คน\n");
 		System.out.println("จำนวนที่ส่งไปแล้ววันนี้	:	" + n_sent + "	คน\n");
 		System.out.println("จำนวนที่จะต้องส่งในวันพรุ่งนี้	:	" + n_reciver + "	คน \n");
-		return n_reciver;
+		// ผลลัพธ์สุดท้าย
+		int n_re2 = n_reciver;
+
+		if (n_re2 > 0) {
+			System.out.println("2.Continueu");
+		}
+
+		// n_re = 800;
+		// สร้าง key = close ปิดkey
+		key = "close";
+		n_re = n_re2;
+		day = day + 1;
+		// กลับมายัง method start() -> check ว่า n_re =0 ?
+		start();
 	}
 
 }

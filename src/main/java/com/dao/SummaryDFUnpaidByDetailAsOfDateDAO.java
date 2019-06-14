@@ -16,8 +16,8 @@ public class SummaryDFUnpaidByDetailAsOfDateDAO {
 	public static ArrayList<HashMap<String, String>> getSummaryDFUnpaidByDetailAsOfDate(String code_doctor)
 			throws IOException, SQLException {
 
-		String to_date = Property.getCenterProperty("/property/application.properties").getProperty("to_date");
-		String from_date = Property.getCenterProperty("/property/application.properties").getProperty("from_date");
+		String to_date = Property.getCenterProperty("/application.properties").getProperty("to_date");
+		String from_date = Property.getCenterProperty("/application.properties").getProperty("from_date");
 
 		// แสดงค่าที่ต้องการ
 		checkFile = new ArrayList<>();

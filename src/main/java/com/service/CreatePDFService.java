@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import com.dao.ExpenseDetailDAO;
@@ -31,20 +32,20 @@ public class CreatePDFService {
 	ByteArrayOutputStream pdfOutputStream = null;
 
 	// สร้างไฟล์ pdf
-	// ส่งค่ากลับเป็นจำนวนไฟล์ที่ต้องทำ size > 0แสดงว่ามีไฟล์ที่ต้องการ merge
 	public ByteArrayOutputStream createFilePDF(List<JasperPrint> listJasper)
 			throws JRException, IOException, SQLException, AddressException, MessagingException {
+
 		String password = "1234";
 
 		pdfOutputStream = new ByteArrayOutputStream();
 
 		// construct exports report to pdf
 		JRPdfExporter exporter = new JRPdfExporter();
-		
+		// ไฟล์ขาเข้า
 		exporter.setExporterInput(SimpleExporterInput.getInstance(listJasper));
-
-		exporter.setExporterOutput(// เก็บไฟล์ที่ ?
-				new SimpleOutputStreamExporterOutput(pdfOutputStream));
+		// ไฟล์ขาออก ที่ต้อง return กลับ เป็น ByteArrayOutputStream ไม่มีการวางไฟล์ไว้ใน
+		// โฟลเดอ
+		exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(pdfOutputStream));
 		// ตั่งค่า pdf file
 		SimplePdfReportConfiguration reportConfig = new SimplePdfReportConfiguration();
 		reportConfig.setSizePageToContent(true);
@@ -71,7 +72,7 @@ public class CreatePDFService {
 
 	}
 
-	// รับไฟล์ jasper
+	// ฟังก์ชันการ map ค่า parameter ดึงค่ามาจาก application.propertise
 	public JasperPrint getInJasperFile(String jasperFile, String code_doctor)
 			throws JRException, IOException, SQLException {
 
@@ -82,22 +83,22 @@ public class CreatePDFService {
 		String from_doctor = code_doctor;
 		String to_doctor = code_doctor;
 		String doctor = code_doctor;
-		String hospitalCode = Property.getCenterProperty("/property/application.properties")
+		String hospitalCode = Property.getCenterProperty("/application.properties")
 				.getProperty("hospitalCode");
-		String yyyy = Property.getCenterProperty("/property/application.properties").getProperty("yyyy");
-		String to_date = Property.getCenterProperty("/property/application.properties").getProperty("to_date");
-		String from_date = Property.getCenterProperty("/property/application.properties").getProperty("from_date");
-		String mm = Property.getCenterProperty("/property/application.properties").getProperty("mm");
+		String yyyy = Property.getCenterProperty("/application.properties").getProperty("yyyy");
+		String to_date = Property.getCenterProperty("/application.properties").getProperty("to_date");
+		String from_date = Property.getCenterProperty("/application.properties").getProperty("from_date");
+		String mm = Property.getCenterProperty("/application.properties").getProperty("mm");
 		String absoluteDiskPath = new File(Property.class.getClassLoader()
 				.getResource(
-						Property.getCenterProperty("/property/application.properties").getProperty("absoluteDiskPath"))
+						Property.getCenterProperty("/application.properties").getProperty("absoluteDiskPath"))
 				.getFile()).getAbsoluteFile().toString();
 
 		Map<String, Object> params = new HashMap<String, Object>();
 
 		// รับค่า จาก Property
 
-		String[] rows = Property.getCenterProperty("/property/application.properties").getProperty("jasperFiles")
+		String[] rows = Property.getCenterProperty("/application.properties").getProperty("jasperFiles")
 				.split(",");
 
 		for (int j = 0; j < rows.length; j++) {
@@ -105,7 +106,7 @@ public class CreatePDFService {
 			// เลือก ว่าจะเข้าอันไหนบ้าง
 			if (jasperFile.equals(rows[j])) {
 				System.out.print("----------------------------------------------\n" + rows[j] + "\n");
-				String[] cols = Property.getCenterProperty("/property/application.properties")
+				String[] cols = Property.getCenterProperty("/application.properties")
 						.getProperty("jasperFiles[" + j + "]").split(",");
 				System.out.println(cols.length);
 
@@ -168,9 +169,9 @@ public class CreatePDFService {
 						continue;
 					} else {
 						System.out.println(
-								cols[i] + "			" + Property.getCenterProperty("/property/application.properties")
+								cols[i] + "			" + Property.getCenterProperty("/application.properties")
 										.getProperty("jasperFiles[" + j + "][" + i + "]"));
-						params.put(cols[i], Property.getCenterProperty("/property/application.properties")
+						params.put(cols[i], Property.getCenterProperty("/application.properties")
 								.getProperty("jasperFiles[" + j + "][" + i + "]"));
 					}
 

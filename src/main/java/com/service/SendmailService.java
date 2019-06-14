@@ -29,11 +29,10 @@ public class SendmailService {
 
 	public static Properties getConfigSMTP() throws IOException {
 
-		String auth = Property.getCenterProperty("/property/application.properties").getProperty("mail.smtp.auth");
-		String enable = Property.getCenterProperty("/property/application.properties")
-				.getProperty("mail.smtp.starttls.enable");
-		String host = Property.getCenterProperty("/property/application.properties").getProperty("mail.smtp.host");
-		String port = Property.getCenterProperty("/property/application.properties").getProperty("mail.smtp.port");
+		String auth = Property.getCenterProperty("/application.properties").getProperty("mail.smtp.auth");
+		String enable = Property.getCenterProperty("/application.properties").getProperty("mail.smtp.starttls.enable");
+		String host = Property.getCenterProperty("/application.properties").getProperty("mail.smtp.host");
+		String port = Property.getCenterProperty("/application.properties").getProperty("mail.smtp.port");
 
 		// config gmail SMTP
 		Properties props = new Properties();
