@@ -8,13 +8,11 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import com.dao.ExpenseDetailDAO;
 import com.dao.PaymentVoucherDAO;
 import com.dao.SummaryDFUnpaidByDetailAsOfDateDAO;
-import com.dao.SummaryDFUnpaidSubreportDAO;
 import com.dao.SummaryRevenueByDetailDAO;
 import com.util.DbConnector;
 import net.sf.jasperreports.engine.JRException;
@@ -32,10 +30,11 @@ public class CreatePDFService {
 	ByteArrayOutputStream pdfOutputStream = null;
 
 	// สร้างไฟล์ pdf
-	public ByteArrayOutputStream createFilePDF(List<JasperPrint> listJasper)
+	public ByteArrayOutputStream createFilePDF(List<JasperPrint> listJasper, String passwords)
 			throws JRException, IOException, SQLException, AddressException, MessagingException {
 
-		String password = "1234";
+		// String password = "1234";
+		String password = passwords;
 
 		pdfOutputStream = new ByteArrayOutputStream();
 
@@ -76,6 +75,8 @@ public class CreatePDFService {
 	public JasperPrint getInJasperFile(String jasperFile, String code_doctor)
 			throws JRException, IOException, SQLException {
 
+		System.out.println("\n\nHere \n");
+
 		// 1. รับไฟล์ jasper เพื่อ put ค่า
 		String file = new File(this.getClass().getResource("/jasperReport/" + jasperFile).getFile()).getAbsoluteFile()
 				.toString();
@@ -88,99 +89,102 @@ public class CreatePDFService {
 		String to_date = Property.getCenterProperty("/application.properties").getProperty("to_date");
 		String from_date = Property.getCenterProperty("/application.properties").getProperty("from_date");
 		String mm = Property.getCenterProperty("/application.properties").getProperty("mm");
-		String absoluteDiskPath = new File(Property.class.getClassLoader()
-				.getResource(Property.getCenterProperty("/application.properties").getProperty("absoluteDiskPath"))
-				.getFile()).getAbsoluteFile().toString();
+		String absoluteDiskPath = new File(CreatePDFService.class.getClass().getResource("/jasperReport").getFile())
+				.getPath().toString();
+		System.out.println("PATH report >> " + absoluteDiskPath);
 
 		Map<String, Object> params = new HashMap<String, Object>();
-
 		// รับค่า จาก Property
 
-		String[] rows = Property.getCenterProperty("/application.properties").getProperty("jasperFiles").split(",");
+		// --------------------------------------------------------------------------
+		String[] jasperFiles = Property.getCenterProperty("/application.properties").getProperty("jasperFiles")
+				.split(",");
 
-		for (int j = 0; j < rows.length; j++) {
-
+		for (String jasFile : jasperFiles) {
 			// เลือก ว่าจะเข้าอันไหนบ้าง
-			if (jasperFile.equals(rows[j])) {
-				System.out.print("----------------------------------------------\n" + rows[j] + "\n");
-				String[] cols = Property.getCenterProperty("/application.properties")
-						.getProperty("jasperFiles[" + j + "]").split(",");
-				System.out.println(cols.length);
+			if (jasperFile.equals(jasFile)) {
+				System.out.print("----------------------------------------------\n" + jasFile + "\n");
 
-				for (int i = 0; i < cols.length; i++) {
+				// หา คอลัมใน เจสเปอนั้นๆ
+				String[] getParaJas = Property.getCenterProperty("/application.properties")
+						.getProperty("jasperFiles[" + jasFile + "]").split(",");
+				System.out.println(getParaJas.length);
 
+				for (String parameter : getParaJas) {
 					// คอลัมที่เท่าไหร่ก็ตามที่เจอคำนี้ ให้ ทำการ save แบบนี้
-					if (cols[i].equals("from_doctor")) {
+					if (parameter.equals("from_doctor")) {
 
-						System.out.println(cols[i] + "			" + from_doctor);
-						params.put(cols[i], from_doctor);
+						System.out.println(parameter + "			" + from_doctor);
+						params.put(parameter, from_doctor);
 						// ทำเสร็จไป column ถัดไป
 						continue;
 
 					}
-					if (cols[i].equals("to_doctor")) {
+					if (parameter.equals("to_doctor")) {
 
-						System.out.println(cols[i] + "			" + to_doctor);
-						params.put(cols[i], to_doctor);
+						System.out.println(parameter + "			" + to_doctor);
+						params.put(parameter, to_doctor);
 						continue;
 
 					}
-					if (cols[i].equals("doctor")) {
+					if (parameter.equals("doctor")) {
 
-						System.out.println(cols[i] + "			" + doctor);
-						params.put(cols[i], doctor);
-						continue;
-
-					}
-					if (cols[i].equals("from_date")) {
-						System.out.println(cols[i] + "			" + from_date);
-						params.put(cols[i], from_date);
-						continue;
-					}
-					if (cols[i].equals("to_date")) {
-						System.out.println(cols[i] + "			" + to_date);
-						params.put(cols[i], to_date);
-						continue;
-					}
-					if (cols[i].equals("hospital_code")) {
-						System.out.println(cols[i] + "			" + hospitalCode);
-						params.put(cols[i], hospitalCode);
+						System.out.println(parameter + "			" + doctor);
+						params.put(parameter, doctor);
 						continue;
 
 					}
-					if (cols[i].equals("month")) {
-						System.out.println(cols[i] + "			" + mm);
-						params.put(cols[i], mm);
+					if (parameter.equals("from_date")) {
+						System.out.println(parameter + "			" + from_date);
+						params.put(parameter, from_date);
+						continue;
+					}
+					if (parameter.equals("to_date")) {
+						System.out.println(parameter + "			" + to_date);
+						params.put(parameter, to_date);
+						continue;
+					}
+					if (parameter.equals("hospital_code")) {
+						System.out.println(parameter + "			" + hospitalCode);
+						params.put(parameter, hospitalCode);
 						continue;
 
 					}
-					if (cols[i].equals("year")) {
-						System.out.println(cols[i] + "			" + yyyy);
-						params.put(cols[i], yyyy);
+					if (parameter.equals("month")) {
+						System.out.println(parameter + "			" + mm);
+						params.put(parameter, mm);
 						continue;
 
 					}
-					if (cols[i].equals("SUBREPORT_DIR")) {
-						System.out.println(cols[i] + "			" + absoluteDiskPath);
-						params.put(cols[i], absoluteDiskPath);
+					if (parameter.equals("year")) {
+						System.out.println(parameter + "			" + yyyy);
+						params.put(parameter, yyyy);
+						continue;
+
+					}
+					if (parameter.equals("SUBREPORT_DIR")) {
+						System.out.println(parameter + "			" + absoluteDiskPath);
+						params.put(parameter, absoluteDiskPath);
 						continue;
 					} else {
 						System.out.println(
-								cols[i] + "			" + Property.getCenterProperty("/application.properties")
-										.getProperty("jasperFiles[" + j + "][" + i + "]"));
-						params.put(cols[i], Property.getCenterProperty("/application.properties")
-								.getProperty("jasperFiles[" + j + "][" + i + "]"));
+								parameter + "			" + Property.getCenterProperty("/application.properties")
+										.getProperty("jasperFiles[" + jasFile + "][" + parameter + "]"));
+						params.put(parameter, Property.getCenterProperty("/application.properties")
+								.getProperty("jasperFiles[" + jasFile + "][" + parameter + "]"));
 					}
 
 				}
+
+				System.out.println("put data in method getInJasperFile Success");
 				// add column เสร็จให้ ไป fillReport
 				break;
 			}
-
 		}
 
 		// creatReport
 		JasperPrint jasperPrint = JasperFillManager.fillReport(file, params, DbConnector.getDBConnection());
+		System.out.println("fill Report in method getInJasperFile Success");
 		return jasperPrint;
 	}
 
@@ -193,19 +197,20 @@ public class CreatePDFService {
 		case "ExpenseDetail.jasper":
 			n_row = ExpenseDetailDAO.getNExpenseDetail(code_doctor);
 			break;
+
 		case "PaymentVoucher.jasper":
 			n_row = PaymentVoucherDAO.getNPaymentVoucher(code_doctor);
 			break;
+
 		case "SummaryDFUnpaidByDetailAsOfDate.jasper":
 			n_row = SummaryDFUnpaidByDetailAsOfDateDAO.getNSummaryDFUnpaidByDetailAsOfDate(code_doctor);
 			break;
-		case "SummaryDFUnpaidSubreport.jasper":
-			n_row = SummaryDFUnpaidSubreportDAO.getNSummaryDFUnpaidByDetailAsOfDate(code_doctor);
-			break;
+
 		case "SummaryRevenueByDetail.jasper":
 			n_row = SummaryRevenueByDetailDAO.getNSummaryDFUnpaidByDetailAsOfDate(code_doctor);
 			break;
 		}
+		System.out.println("check row in method getNRowReport Success");
 
 		return n_row;
 

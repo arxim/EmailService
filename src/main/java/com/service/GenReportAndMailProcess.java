@@ -1,5 +1,6 @@
 package com.service;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -30,21 +31,28 @@ import com.service.CreatePDFService;
 import com.service.SendmailService;
 
 import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
 
 @Component
 public class GenReportAndMailProcess {
 
+	private CreatePDFService createPDFService = new CreatePDFService();
+	private SendmailService sendmailService = new SendmailService();
+
 	int n_re;
 	int day = 15;
+	// int sec = 0;
+	// int total_n_doc_not_recive ;
 	// int day = 1;// Test
 	String key = "open";
 
 	// กระตุ้นงานด้วย Scheduled anotation ->method start() ทำงาน -> เกิดJob[1]
 	// @Scheduled(cron = "0 0/7 2 15 * ?")//Test
 	@Scheduled(cron = "0 0 2 15 * ?")
-	public void start()
-			throws ClassNotFoundException, NoSuchMethodException, SchedulerException, ParseException, SQLException {
+	public void start() throws ClassNotFoundException, NoSuchMethodException, SchedulerException, ParseException,
+			SQLException, JRException, IOException {
 
 		// เก็บจำนวนทั้งหมดตอนเริ่มต้น เพื่อให้ cron ทำงานในวันแรก
 		if (key.equals("open")) {
@@ -60,8 +68,8 @@ public class GenReportAndMailProcess {
 
 			deleteScheduler();
 			// setSchedule("0 " + day + " 2 15 * ?");// Test
-			setSchedule("20 0 2 " + day + " * ?");
-
+			// setSchedule("10 " + sec + " 2 " + day + " * ?");//Test1
+			setSchedule("10 0 2 " + day + " * ?");
 		}
 		if (n_re == 0) {
 			// เปลี่ยนกุญแจ เป็นเปิดเมื่อ ทำจนเสร็จ รอวันถัดไป เพื่อรอรค่าหมอทั้งหมด
@@ -156,12 +164,15 @@ public class GenReportAndMailProcess {
 
 	}
 
-	int n_reciver;
-	int sent;
-
 	// อังกอริทึมสำหรับวนลูปส่งเมล์ทีละ ตามจำนวนสูงสุดของผู้ส่ง
-	public void loopSend() throws JRException, IOException, MessagingException, SQLException, ClassNotFoundException,
-			NoSuchMethodException, SchedulerException, ParseException {
+	public void loopSend() throws JRException, IOException, MessagingException, ClassNotFoundException,
+			NoSuchMethodException, SchedulerException, ParseException, SQLException {
+
+		String mail_doctor = "";
+		String code_doctor = "";
+		String password_doctor = "";
+		int n_reciver;
+		int sent;
 
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 		Date now = new Date();
@@ -195,11 +206,20 @@ public class GenReportAndMailProcess {
 
 						// --- processing การสร้างไฟล์ให้หมอแต่ละคน
 						// mail_doctor เก็บอีเมล์หมอจากฐานข้อมูล แต่ละคน
-						String mail_doctor = DoctorDAO.getReciver().get(n_sent).get("EMAIL").toString();
-						// code_doctor เก็บโค้ดหมอจากฐานข้อมูลแต่ละคน
-						String code_doctor = DoctorDAO.getReciver().get(n_sent).get("DOCTOR_PROFILE_CODE").toString();
 
-						System.out.print(code_doctor + "\t" + mail_doctor + "\t:\n\t\t");
+						try {
+							mail_doctor = DoctorDAO.getReciver().get(n_sent).get("EMAIL").toString();
+							// code_doctor เก็บโค้ดหมอจากฐานข้อมูลแต่ละคน
+							code_doctor = DoctorDAO.getReciver().get(n_sent).get("DOCTOR_CODE").toString();
+							password_doctor = DoctorDAO.getPassEncryt(code_doctor).get(0).get("PASS_ENCRYPT")
+									.toString();
+							System.out.println("Email >> " + mail_doctor + ", doctor_code >> " + code_doctor
+									+ ", pwd_doctor >>  " + password_doctor);
+						} catch (SQLException e) {
+							// TODO Auto-generated catch block
+							System.out.println("Error : Get mail_doctor,code_doctor,password_doctor");
+							e.printStackTrace();
+						}
 
 						// Test
 						// jasperFiles เก็บไฟล์ jasper เป็น string array
@@ -208,7 +228,7 @@ public class GenReportAndMailProcess {
 
 						// เก็บชื่อไฟล์ที่หมอจะต้องทำไว้ใน list
 						List<JasperPrint> listJasper = new ArrayList<JasperPrint>();
-						CreatePDFService c = new CreatePDFService();
+						createPDFService = new CreatePDFService();
 
 						// รับชื่อไฟล์ จาก ไฟล์ jasper ทั้งหมด
 						for (String jasperFile : jasperFiles) {
@@ -220,13 +240,13 @@ public class GenReportAndMailProcess {
 							if (CreatePDFService.getNRowReport(jasperFile, code_doctor) > 0) {
 								// เก็บ JasperPrint ลงใน listJasper จากการส่งไป ยังฟังก์ชัน getInJasperFile()
 								// เพื่อ map parameter แล้ว
-								listJasper.add(c.getInJasperFile(jasperFile, code_doctor));
+								listJasper.add(createPDFService.getInJasperFile(jasperFile, code_doctor));
 							}
 						}
 
 						// ต้องมีไฟล์ ถึงจะส่ง
 						if (listJasper.size() > 0) {
-							SendmailService s = new SendmailService();
+							sendmailService = new SendmailService();
 
 							// Mutireciver
 							List<String> userReciverMail = new ArrayList<String>();
@@ -235,7 +255,10 @@ public class GenReportAndMailProcess {
 							userReciverMail.add("wintazaza@gmail.com");
 							userReciverMail.add("spittayakorn@gmail.com");
 
-							s.sendmail(email[0], email[1], userReciverMail, c.createFilePDF(listJasper));
+							sendmailService.sendmail(email[0], email[1], userReciverMail,
+									createPDFService.createFilePDF(listJasper, password_doctor));
+							// s.sendmail(email[0], email[1], userReciverMail, c.createFilePDF(listJasper));
+							DoctorDAO.SendMailPaymentSuccess(code_doctor);
 						}
 
 						// endTest
@@ -255,24 +278,26 @@ public class GenReportAndMailProcess {
 			}
 
 		}
-		System.out.println("\nจำนวนผู้รับทั้งหมด 	:	" + DoctorDAO.getNReciver() + "	คน\n");
+		// System.out.println("\nจำนวนผู้รับทั้งหมด : " + total_n_doc_not_recive + "
+		// คน\n");
+		// คน\n");
 		System.out.println("จำนวนที่ส่งไปแล้ววันนี้	:	" + n_sent + "	คน\n");
 		System.out.println("จำนวนที่จะต้องส่งในวันพรุ่งนี้	:	" + n_reciver + "	คน \n");
 		// ผลลัพธ์สุดท้าย
-		int n_re2 = n_reciver;
 
-		if (n_re2 > 0) {
-			System.out.println("2.Continueu");
+		if (n_reciver > 0) {
+			System.out.println("To be con.. next Day");
 		}
 
 		// สร้าง key = close ปิดkey
 		key = "close";
-		n_re = n_re2;
+		n_re = n_reciver;
 
 		/*
 		 * if (day == 5) { n_re = 0; } // Test
 		 */
 		day = day + 1;
+		// sec = sec + 1; Test1
 		// กลับมายัง method start() -> check ว่า n_re =0 ?
 		start();
 	}

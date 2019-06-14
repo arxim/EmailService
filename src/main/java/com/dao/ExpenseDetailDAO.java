@@ -57,7 +57,8 @@ public class ExpenseDetailDAO {
 			ps.setString(10, "%");
 
 			checkFile = DbConnector.convertArrayListHashMap(ps.executeQuery());
-
+			System.out.println("ExecuteQuery Success method >> getExpenseDetail");
+			
 		} catch (Exception e) {
 			// TODO: handle exception
 		} finally {
@@ -73,5 +74,6 @@ public class ExpenseDetailDAO {
 
 		// return 1;//test
 		return getExpenseDetail(code_doctor).size();
+		
 	}
 }

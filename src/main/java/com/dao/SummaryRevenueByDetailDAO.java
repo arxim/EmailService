@@ -166,6 +166,7 @@ public class SummaryRevenueByDetailDAO {
 			ps.setString(33, "%");
 
 			checkFile = DbConnector.convertArrayListHashMap(ps.executeQuery());
+			System.out.println("ExecuteQuery Success method >> getSummaryDFUnpaidByDetailAsOfDate");
 
 		} catch (Exception e) {
 			// TODO: handle exception

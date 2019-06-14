@@ -1,43 +1,51 @@
 package com.dao;
 
+import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.util.DbConnector;
+import com.util.Property;
 
 public class DoctorDAO {
 	static ArrayList<HashMap<String, String>> listReciver = null;
 	static ArrayList<HashMap<String, String>> checkFile = null;
 
-	public static ArrayList<HashMap<String, String>> getReciver() throws SQLException {
+	// ------------------------------------------------------------------------------------
+	// Copy Code from vtnjar
+	// get Email and Doctor code from mm,yyyy,hospital code
+	public static ArrayList<HashMap<String, String>> getReciver() throws SQLException, IOException {
 
+		String hospitalCode = Property.getCenterProperty("/application.properties").getProperty("hospitalCode");
+		String yyyy = Property.getCenterProperty("/application.properties").getProperty("yyyy");
+		String mm = Property.getCenterProperty("/application.properties").getProperty("mm");
 		// แสดงค่าที่ต้องการ
 		listReciver = new ArrayList<>();
 		PreparedStatement ps = null;
-		String sql = "SELECT [HOSPITAL_CODE]\r\n" + "      ,[HOSPITAL_UNIT_CODE]\r\n"
-				+ "      ,[DOCTOR_PROFILE_CODE]\r\n" + "      ,[GUARANTEE_DR_CODE]\r\n" + "      ,[CODE]\r\n"
-				+ "      ,[NAME_THAI]\r\n" + "      ,[NAME_ENG]\r\n" + "      ,[LICENSE_ID]\r\n"
-				+ "      ,[FROM_DATE]\r\n" + "      ,[TO_DATE]\r\n" + "      ,[BANK_ACCOUNT_NO]\r\n"
-				+ "      ,[BANK_ACCOUNT_NAME]\r\n" + "      ,[BANK_BRANCH_CODE]\r\n" + "      ,[BANK_CODE]\r\n"
-				+ "      ,[DOCTOR_TYPE_CODE]\r\n" + "      ,[DOCTOR_CATEGORY_CODE]\r\n" + "      ,[PAY_TAX_402_BY]\r\n"
-				+ "      ,[PAYMENT_MODE_CODE]\r\n" + "      ,[DEPARTMENT_CODE]\r\n" + "      ,[TAX_ID]\r\n"
-				+ "      ,[NOTE]\r\n" + "      ,[ADDRESS1]\r\n" + "      ,[ADDRESS2]\r\n" + "      ,[ADDRESS3]\r\n"
-				+ "      ,[ZIP]\r\n" + "      ,[EMAIL]\r\n" + "      ,[GUARANTEE_START_DATE]\r\n"
-				+ "      ,[GUARANTEE_EXPIRE_DATE]\r\n" + "      ,[GUARANTEE_SOURCE]\r\n"
-				+ "      ,[OVER_GUARANTEE_PCT]\r\n" + "      ,[IN_GUARANTEE_PCT]\r\n"
-				+ "      ,[IS_ADVANCE_PAYMENT]\r\n" + "      ,[ACTIVE]\r\n" + "      ,[UPDATE_DATE]\r\n"
-				+ "      ,[UPDATE_TIME]\r\n" + "      ,[USER_ID]\r\n" + "      ,[SALARY]\r\n"
-				+ "      ,[POSITION_AMT]\r\n" + "      ,[IS_HOLD]\r\n" + "      ,[DISTRIBUTE_INCOME]\r\n"
-				+ "      ,[ABSORB_TAX_TYPE]\r\n" + "      ,[VENDOR_ID]\r\n" + "      ,[HP_ABSORB_DOCTOR_CODE]\r\n"
-				+ "  FROM [DFVTNPRD].[dbo].[DOCTOR] where EMAIL != '' and SALARY ='0.00'   ";
+		String sql = "\r\n" + "SELECT T1.DOCTOR_CODE, \r\n" + "				     T2.NAME_THAI,\r\n"
+				+ "				      T1.STATUS_MODIFY,\r\n" + "				      T2.EMAIL ,\r\n"
+				+ "			       T1.MM,\r\n" + "				      T1.YYYY \r\n"
+				+ "				FROM PAYMENT_MONTHLY T1 \r\n"
+				+ "				     LEFT JOIN DOCTOR T2 ON T1.HOSPITAL_CODE = T2.HOSPITAL_CODE \r\n"
+				+ "				                            AND T1.DOCTOR_CODE = T2.CODE \r\n"
+				+ "				WHERE T1.YYYY = ?      AND T1.MM = ?\r\n"
+				+ "				     AND (T1.STATUS_MODIFY = '' \r\n"
+				+ "				          OR T1.STATUS_MODIFY IS NULL) \r\n"
+				+ "				     AND T1.HOSPITAL_CODE = ?\r\n" + "				     AND DR_NET_PAID_AMT > 0 \r\n"
+				+ "				      AND DOCTOR_CODE IN (    SELECT CODE \r\n"
+				+ "				    FROM DOCTOR     WHERE EMAIL <> '' );";
 		try (java.sql.Connection conn = DbConnector.getDBConnection()) {
 			// ต้องการเลือก row และ Colume ใชเ ArayList HashMap
 			ps = conn.prepareStatement(sql);
+			ps.setString(1, yyyy);
+			ps.setString(2, mm);
+			ps.setString(3, hospitalCode);
 
 			// ps.setString(1, doctorCode);
 			listReciver = DbConnector.convertArrayListHashMap(ps.executeQuery());
+			System.out.println("ExecuteQuery Success method >> getReciver");
 
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -50,10 +58,85 @@ public class DoctorDAO {
 		return listReciver;
 	}
 
-	public static int getNReciver() throws SQLException {
+	public static int getNReciver() throws SQLException, IOException {
 
 		// return 1;//test
 		return getReciver().size();
+	}
+
+	// get password will encrytion from mm,yyyy,hospital_code,doctor_code :)
+	public static ArrayList<HashMap<String, String>> getPassEncryt(String code_doctor)
+			throws SQLException, IOException {
+
+		String hospitalCode = Property.getCenterProperty("/application.properties").getProperty("hospitalCode");
+		String yyyy = Property.getCenterProperty("/application.properties").getProperty("yyyy");
+		String mm = Property.getCenterProperty("/application.properties").getProperty("mm");
+		// แสดงค่าที่ต้องการ
+		listReciver = new ArrayList<>();
+		PreparedStatement ps = null;
+		String sql = "SELECT T1.HOSPITAL_CODE, \r\n" + "		                  T2.CODE AS DOCTOR_CODE, \r\n"
+				+ "		                  COALESCE(NULLIF(T2.EMAIL,''),'0') EMAIL, \r\n"
+				+ "		                  CASE \r\n" + "		                      WHEN T2.LICENSE_ID = '' \r\n"
+				+ "		                      THEN T2.CODE \r\n"
+				+ "		                      ELSE T2.LICENSE_ID\r\n"
+				+ "		                  END AS PASS_ENCRYPT, \r\n" + "		                  T1.YYYY, \r\n"
+				+ "		                 T1.MM, \r\n" + "		                  T1.STATUS_MODIFY \r\n"
+				+ "		           FROM PAYMENT_MONTHLY T1 \r\n"
+				+ "		                LEFT JOIN DOCTOR T2 ON T1.HOSPITAL_CODE = T2.HOSPITAL_CODE \r\n"
+				+ "		                                       AND T1.DOCTOR_CODE = T2.CODE \r\n"
+				+ "		           WHERE T1.HOSPITAL_CODE = ? \r\n" + "		           		AND T2.CODE = ?\r\n"
+				+ "		           		AND T1.YYYY = ? \r\n" + "		                 AND T1.MM = ?\r\n"
+				+ "		                 AND (T1.STATUS_MODIFY = '' OR T1.STATUS_MODIFY IS NULL); ";
+		try (java.sql.Connection conn = DbConnector.getDBConnection()) {
+			// ต้องการเลือก row และ Colume ใชเ ArayList HashMap
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, hospitalCode);
+			ps.setString(2, code_doctor);
+			ps.setString(3, yyyy);
+			ps.setString(4, mm);
+
+			// ps.setString(1, doctorCode);
+			listReciver = DbConnector.convertArrayListHashMap(ps.executeQuery());
+			System.out.println("ExecuteQuery Success method >> getPassEncryt");
+		} catch (Exception e) {
+			// TODO: handle exception
+		} finally {
+			if (ps != null) {
+				ps.close();
+			}
+		}
+
+		return listReciver;
+	}
+
+	// Stam code หมอ แต่ละคนว่าได้ส่งแล้วง
+	public static void SendMailPaymentSuccess(String code_doctor) throws SQLException, IOException {
+		String hospitalCode = Property.getCenterProperty("/application.properties").getProperty("hospitalCode");
+		String yyyy = Property.getCenterProperty("/application.properties").getProperty("yyyy");
+		String mm = Property.getCenterProperty("/application.properties").getProperty("mm");
+
+		PreparedStatement ps = null;
+		String SQL = "UPDATE PAYMENT_MONTHLY \r\n" + "		            SET \r\n"
+				+ "		               STATUS_MODIFY = 'T' \r\n" + "		           WHERE DOCTOR_CODE = ?\r\n"
+				+ "		            AND HOSPITAL_CODE = ?\r\n" + "		            AND MM = ?\r\n"
+				+ "		            AND YYYY = ? \r\n" + "";
+		try (java.sql.Connection conn = DbConnector.getDBConnection()) {
+
+			ps = conn.prepareStatement(SQL);
+			ps.setString(1, code_doctor);
+			ps.setString(2, hospitalCode);
+			ps.setString(3, mm);
+			ps.setString(4, yyyy);
+
+			ps.executeQuery();
+			System.out.println("ExecuteQuery Success method >> SendMailPaymentSuccess");
+
+		} catch (Exception e) {
+
+		} finally {
+			if (ps != null)
+				ps.close();
+		}
 	}
 
 }
