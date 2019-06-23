@@ -15,12 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
-import java.sql.SQLException;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-import com.service.SendmailService;
 
 public class DbConnector {
 	private static Connection conn;
@@ -58,7 +54,7 @@ public class DbConnector {
 	}
 
 	public Connection getConnection() {
-		return this.conn;
+		return DbConnector.conn;
 	}
 
 	public static Connection getDBConnection() throws IOException {
@@ -123,13 +119,13 @@ public class DbConnector {
 
 	public void setPrepareStatement(String sql) {
 		try {
-			this.conn.prepareStatement(sql);
+			DbConnector.conn.prepareStatement(sql);
 		} catch (SQLException e) {
 		}
 	}
 
 	public PreparedStatement getPrepareStatement() {
-		return this.pstm;
+		return DbConnector.pstm;
 	}
 
 	public boolean doSave(String sql) {
@@ -178,7 +174,7 @@ public class DbConnector {
 		JSONObject jsonObj = new JSONObject();
 		try {
 			this.doConnect();
-			ResultSet rs = this.stm.executeQuery(sql);
+			ResultSet rs = DbConnector.stm.executeQuery(sql);
 			arrayObj = new JSONArray();
 			while (rs.next()) {
 				jsonObj = new JSONObject();
@@ -218,7 +214,7 @@ public class DbConnector {
 		JSONArray arrayObjMain = new JSONArray();
 		try {
 			this.doConnect();
-			ResultSet rs = this.stm.executeQuery(sql);
+			ResultSet rs = DbConnector.stm.executeQuery(sql);
 			ResultSetMetaData rsMetaData = rs.getMetaData();
 			while (rs.next()) {
 				arrayObj = new JSONArray();
@@ -246,7 +242,7 @@ public class DbConnector {
 		ResultSet rs = null;
 		try {
 			this.doConnect();
-			rs = this.stm.executeQuery(sql);
+			rs = DbConnector.stm.executeQuery(sql);
 			ResultSetMetaData rsMetaData = rs.getMetaData();
 			while (rs.next()) {
 				HashMap<String, String> rtnData = new HashMap<String, String>();
@@ -320,7 +316,7 @@ public class DbConnector {
 		ResultSet rs = null;
 		try {
 			this.doConnect();
-			rs = this.stm.executeQuery(sql);
+			rs = DbConnector.stm.executeQuery(sql);
 			ResultSetMetaData rsMetaData = rs.getMetaData();
 			while (rs.next()) {
 				HashMap<String, String> rtnData = new HashMap<String, String>();
@@ -347,7 +343,7 @@ public class DbConnector {
 		ResultSet rs = null;
 		try {
 			this.doConnect();
-			rs = this.stm.executeQuery(sql);
+			rs = DbConnector.stm.executeQuery(sql);
 			ResultSetMetaData rsMetaData = rs.getMetaData();
 
 			// column name

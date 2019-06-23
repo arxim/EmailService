@@ -40,7 +40,7 @@ public class CreatePDFService {
 
 		// construct exports report to pdf
 		JRPdfExporter exporter = new JRPdfExporter();
-		// นำชื่อไฟล์ส่งไป ยังฟังก์ชัน getInJasperFile() เพื่อ map parameter
+		
 		exporter.setExporterInput(SimpleExporterInput.getInstance(listJasper));
 
 		exporter.setExporterOutput(// เก็บไฟล์ที่ ?

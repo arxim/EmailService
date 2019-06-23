@@ -3,6 +3,8 @@ package com.service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
@@ -54,14 +56,33 @@ public class SendmailService {
 		return session;
 	}
 
-	public void sendmail(String userSenderMail, String passwordSenderMail, String userReciverMail,
+	public void sendmail(String userSenderMail, String passwordSenderMail, List<String> userReciverMail,
 			ByteArrayOutputStream get_jasperDocFile) throws AddressException, MessagingException, IOException {
 
 		msg = new MimeMessage(getSession(userSenderMail, passwordSenderMail));
+
+		// send to Multiple recipients .-
+
+		InternetAddress sentFrom = new InternetAddress(userSenderMail);
+		msg.setFrom(sentFrom); // Set the sender address
+
+		List<String> list = userReciverMail;
+
+		InternetAddress[] sendTo = new InternetAddress[list.size()];
+		for (int i = 0; i < list.size(); i++) {
+			System.out.println("Send to:" + list.get(i));
+			sendTo[i] = new InternetAddress(list.get(i));
+		}
+
+		msg.setRecipients(javax.mail.internet.MimeMessage.RecipientType.TO, sendTo);
+
+		// end .-
+
 		// 2.ตั่งค่าชื่อผู้รับ
-		msg.setFrom(new InternetAddress(userReciverMail, false));
+		// msg.setFrom(new InternetAddress(userSenderMail, false));
 		// 3.ตั่งค่าชื่อผู้รับ
-		msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(userReciverMail));
+		// msg.setRecipients(Message.RecipientType.TO,
+		// InternetAddress.parse(userReciverMail));
 		// 4.ตั่งค่าหัวข้อจดหมาย
 		msg.setSubject("SpringBootSendMail");
 		// 5. ตั้งค่าเวลาส่งmsg.setSentDate(new Date());

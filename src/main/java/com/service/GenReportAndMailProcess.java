@@ -86,7 +86,8 @@ public class GenReportAndMailProcess {
 							// ส่ง ชื่อไฟล์และรหัสหมอไปทำ การตรวจสอบ
 							// เก็บชื่อไฟล์ที่จะต้องทำไว้ใน list
 							if (CreatePDFService.getNRowReport(jasperFile, code_doctor) > 0) {
-								// เก็บ JasperPrint
+								// เก็บ JasperPrint ลงใน listJasper จากการส่งไป ยังฟังก์ชัน getInJasperFile()
+								// เพื่อ map parameter แล้ว
 								listJasper.add(c.getInJasperFile(jasperFile, code_doctor));
 							}
 						}
@@ -95,7 +96,13 @@ public class GenReportAndMailProcess {
 						if (listJasper.size() > 0) {
 							SendmailService s = new SendmailService();
 
-							s.sendmail(email[0], email[1], "springbootrecive@gmail.com", c.createFilePDF(listJasper));
+							// Mutireciver
+							List<String> userReciverMail = new ArrayList<String>();
+							userReciverMail.add("springbootrecive@gmail.com");
+							userReciverMail.add("wintazaza@gmail.com");
+							userReciverMail.add("spittayakorn@gmail.com");
+
+							s.sendmail(email[0], email[1], userReciverMail, c.createFilePDF(listJasper));
 						}
 
 						// endTest
