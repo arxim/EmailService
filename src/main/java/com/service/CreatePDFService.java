@@ -203,8 +203,10 @@ public class CreatePDFService {
 			break;
 		case "SummaryDFUnpaidSubreport.jasper":
 			n_row = SummaryDFUnpaidSubreportDAO.getNSummaryDFUnpaidByDetailAsOfDate(code_doctor);
+			break;
 		case "SummaryRevenueByDetail.jasper":
 			n_row = SummaryRevenueByDetailDAO.getNSummaryDFUnpaidByDetailAsOfDate(code_doctor);
+			break;
 		}
 
 		return n_row;
