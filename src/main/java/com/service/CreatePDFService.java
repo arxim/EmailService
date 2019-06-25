@@ -222,5 +222,5 @@ public class CreatePDFService {
 		JasperPrint jasperPrint = JasperFillManager.fillReport(file, params, DbConnector.getDBConnection());
 		return jasperPrint;
 	}
-
+	System.out.println("");
 }
