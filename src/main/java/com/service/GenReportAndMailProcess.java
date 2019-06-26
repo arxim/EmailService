@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.mail.MessagingException;
-import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
 import org.springframework.stereotype.Component;
 
 import com.dao.DoctorDAO;
@@ -18,7 +17,7 @@ import net.sf.jasperreports.engine.JasperPrint;
 public class GenReportAndMailProcess {
 
 	public static void main(String[] args)
-			throws JRException, InvalidPasswordException, IOException, MessagingException, SQLException {
+			throws JRException, IOException, MessagingException, SQLException {
 		/*
 		 * ArrayList<HashMap<String,String>> listDoctor = sm.getNRecive(); for (int i =
 		 * 0; i < listDoctor.size(); i++) { String name =
@@ -32,7 +31,7 @@ public class GenReportAndMailProcess {
 
 	// อังกอริทึมสำหรับวนลูปส่งเมล์ทีละ ตามจำนวนสูงสุดของผู้ส่ง
 	public static int loopSend()
-			throws JRException, InvalidPasswordException, IOException, MessagingException, SQLException {
+			throws JRException, IOException, MessagingException, SQLException {
 
 		// account เก็บ อีเมล์ ผู้ส่งจาก data.properties
 		String[] account = Property.getCenterProperty("/property/application.properties").getProperty("sendersMail")
