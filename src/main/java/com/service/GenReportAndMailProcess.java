@@ -219,7 +219,8 @@ public class GenReportAndMailProcess {
 		List<JasperPrint> listJasper = null;
 
 		// process
-		System.out.println("\nJava cron job expression: " + strDate + "\n");
+
+		System.out.println("\nJava cron job expression: " + sdf.format(new Date()) + "\n");
 
 		// account เก็บ อีเมล์ ผู้ส่งจาก data.properties
 		try {
@@ -395,12 +396,12 @@ public class GenReportAndMailProcess {
 
 		if (n_reciver > 0) {
 			System.out.println("To be con.. next Day");
-
+			// เพิ่มวันถัดไป
+			day = day + 1;
 		}
 		// สร้าง key = close ปิดkey
 		key = "close";
-		// เพิ่มวันถัดไป
-		day = day + 1;
+
 		// รับจำนวนปัจจุบัน เพื่อให้ method start() ตรวยสอบว่ายังมีคนอีกไหม ? ->
 		// มีให้ทำต่อ : ไม่มี รอให้ anotation Schdule กระตุ้นทำเดือนถัดไป
 		n_re = n_reciver;
