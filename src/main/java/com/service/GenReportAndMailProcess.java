@@ -47,6 +47,9 @@ public class GenReportAndMailProcess {
 	int sec = 10;
 	// int day = 1;// Test
 	String key = "open";
+	SimpleDateFormat sdf = null;
+	Date now = null;
+	String strDate = "";
 
 	// กระตุ้นงานด้วย Scheduled anotation ->method start() ทำงาน -> เกิดJob[1]
 	// @Scheduled(cron = "0 0/7 2 15 * ?")//Test
@@ -69,8 +72,13 @@ public class GenReportAndMailProcess {
 		// กรณีพบว่า ต้องทำงานเพิ่ม เปลี่ยน cron
 		if (n_re > 0) {
 			// Job[1] คืนค่า > 0 (ยังเหลือผู้รับ) -> doSetTimeScherdule วันถัดไป -> Job[2]
+
+			sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+			now = new Date();
+			strDate = sdf.format(now);
+
 			System.out.println("\n\nTotal reciver	:	" + n_re + "	person");
-			System.out.println("\nProgram has beginning....it cooldown '" + sec + "' minute do day '" + day + "'... ");
+			System.out.println("\nProgram has beginning....it cooldown '" + sec + "' minute do '" + strDate + "'... ");
 
 			try {
 				deleteScheduler();
@@ -203,22 +211,14 @@ public class GenReportAndMailProcess {
 		String mail_doctor = "";
 		String code_doctor = "";
 		String password_doctor = "";
-		String strDate = "";
 		String pass = "true";
 
 		String[] account = null;
 		String[] jasperFiles = null;
 
-		SimpleDateFormat sdf = null;
-
-		Date now = null;
-
 		List<JasperPrint> listJasper = null;
 
 		// process
-		sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-		now = new Date();
-		strDate = sdf.format(now);
 		System.out.println("\nJava cron job expression: " + strDate + "\n");
 
 		// account เก็บ อีเมล์ ผู้ส่งจาก data.properties
