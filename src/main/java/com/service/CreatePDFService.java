@@ -78,8 +78,6 @@ public class CreatePDFService {
 	public JasperPrint getInJasperFile(String jasperFile, String code_doctor)
 			throws JRException, IOException, SQLException {
 
-		System.out.println("\n\nHere \n");
-
 		// 1. รับไฟล์ jasper เพื่อ put ค่า
 		String file = new File(this.getClass().getResource("/jasperReport/" + jasperFile).getFile()).getAbsoluteFile()
 				.toString();
@@ -94,7 +92,6 @@ public class CreatePDFService {
 		String mm = Property.getCenterProperty("/application.properties").getProperty("mm");
 		String absoluteDiskPath = new File(CreatePDFService.class.getClass().getResource("/jasperReport").getFile())
 				.getPath().toString();
-		System.out.println("PATH report >> " + absoluteDiskPath);
 
 		// String mm = null;
 		// String yyyy = null;
@@ -116,7 +113,8 @@ public class CreatePDFService {
 		for (String jasFile : jasperFiles) {
 			// เลือก ว่าจะเข้าอันไหนบ้าง
 			if (jasperFile.equals(jasFile)) {
-				System.out.print("----------------------------------------------\n" + jasFile + "\n");
+				System.out.print("-------------------------------------------------------------------------------\n"
+						+ jasFile + "\n");
 
 				// หา คอลัมใน เจสเปอนั้นๆ
 				String[] getParaJas = Property.getCenterProperty("/application.properties")
@@ -127,7 +125,7 @@ public class CreatePDFService {
 					// คอลัมที่เท่าไหร่ก็ตามที่เจอคำนี้ ให้ ทำการ save แบบนี้
 					if (parameter.equals("from_doctor")) {
 
-						System.out.println(parameter + "			" + from_doctor);
+						System.out.println(parameter + "\t\t\t" + from_doctor);
 						params.put(parameter, from_doctor);
 						// ทำเสร็จไป column ถัดไป
 						continue;
@@ -135,54 +133,53 @@ public class CreatePDFService {
 					}
 					if (parameter.equals("to_doctor")) {
 
-						System.out.println(parameter + "			" + to_doctor);
+						System.out.println(parameter + "\t\t\t" + to_doctor);
 						params.put(parameter, to_doctor);
 						continue;
 
 					}
 					if (parameter.equals("doctor")) {
 
-						System.out.println(parameter + "			" + doctor);
+						System.out.println(parameter + "\t\t\t" + doctor);
 						params.put(parameter, doctor);
 						continue;
 
 					}
 					if (parameter.equals("from_date")) {
-						System.out.println(parameter + "			" + from_date);
+						System.out.println(parameter + "\t\t\t" + from_date);
 						params.put(parameter, from_date);
 						continue;
 					}
 					if (parameter.equals("to_date")) {
-						System.out.println(parameter + "			" + to_date);
+						System.out.println(parameter + "\t\t\t" + to_date);
 						params.put(parameter, to_date);
 						continue;
 					}
 					if (parameter.equals("hospital_code")) {
-						System.out.println(parameter + "			" + hospitalCode);
+						System.out.println(parameter + "\t\t\t" + hospitalCode);
 						params.put(parameter, hospitalCode);
 						continue;
 
 					}
 					if (parameter.equals("month")) {
-						System.out.println(parameter + "			" + mm);
+						System.out.println(parameter + "\t\t\t" + mm);
 						params.put(parameter, mm);
 						continue;
 
 					}
 					if (parameter.equals("year")) {
-						System.out.println(parameter + "			" + yyyy);
+						System.out.println(parameter + "\t\t\t" + yyyy);
 						params.put(parameter, yyyy);
 						continue;
 
 					}
 					if (parameter.equals("SUBREPORT_DIR")) {
-						System.out.println(parameter + "			" + absoluteDiskPath);
+						System.out.println(parameter + "\t\t\t" + absoluteDiskPath);
 						params.put(parameter, absoluteDiskPath);
 						continue;
 					} else {
-						System.out.println(
-								parameter + "			" + Property.getCenterProperty("/application.properties")
-										.getProperty("jasperFiles[" + jasFile + "][" + parameter + "]"));
+						System.out.println(parameter + "\t\t\t" + Property.getCenterProperty("/application.properties")
+								.getProperty("jasperFiles[" + jasFile + "][" + parameter + "]"));
 						params.put(parameter, Property.getCenterProperty("/application.properties")
 								.getProperty("jasperFiles[" + jasFile + "][" + parameter + "]"));
 					}

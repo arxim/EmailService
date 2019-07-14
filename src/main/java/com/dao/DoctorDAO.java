@@ -49,9 +49,9 @@ public class DoctorDAO {
 			ps.setString(2, mm);
 			ps.setString(3, hospitalCode);
 
-			// ps.setString(1, doctorCode);
+			
 			listReciver = DbConnector.convertArrayListHashMap(ps.executeQuery());
-			// System.out.println("success getReciver() from DoctorDAO");
+			//System.out.println("success getReciver() from DoctorDAO");
 
 		} catch (Exception e) {
 			System.out.println("fail getReciver() from DoctorDAO");

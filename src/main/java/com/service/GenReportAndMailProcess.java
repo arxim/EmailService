@@ -44,6 +44,7 @@ public class GenReportAndMailProcess {
 
 	int n_re;
 	int day = 15;
+	int sec = 10;
 	// int day = 1;// Test
 	String key = "open";
 
@@ -69,12 +70,12 @@ public class GenReportAndMailProcess {
 		if (n_re > 0) {
 			// Job[1] คืนค่า > 0 (ยังเหลือผู้รับ) -> doSetTimeScherdule วันถัดไป -> Job[2]
 			System.out.println("\n\nTotal reciver	:	" + n_re + "	person");
-			System.out.println("\nProgram has beginning....cooldown 10 minute do day '" + day + "'... ");
+			System.out.println("\nProgram has beginning....it cooldown '" + sec + "' minute do day '" + day + "'... ");
 
 			try {
 				deleteScheduler();
 				// setSchedule("0 " + day + " 2 15 * ?");// Test
-				setSchedule("10 0 2 " + day + " * ?");
+				setSchedule(sec + " 0 2 " + day + " * ?");
 
 			} catch (ClassNotFoundException | NoSuchMethodException | SchedulerException | ParseException e) {
 				// TODO Auto-generated catch block
@@ -84,7 +85,7 @@ public class GenReportAndMailProcess {
 		}
 		if (n_re == 0) {
 			// เปลี่ยนกุญแจ เป็นเปิดเมื่อ ทำจนเสร็จ รอวันถัดไป เพื่อรอรค่าหมอทั้งหมด
-			System.out.println("\n*****************send mail success this month*****************");
+			System.out.println("\n*****************send mail success this month*****************\n\n");
 			try {
 				deleteScheduler();
 
@@ -291,8 +292,8 @@ public class GenReportAndMailProcess {
 								System.out.println("fail get password reciver from method loopSend() !");
 							}
 
-							System.out.println("Email >> " + mail_doctor + ", doctor_code >> " + code_doctor
-									+ ", pwd_doctor >>  " + password_doctor);
+							System.out.println("\nEmail:\n\t" + mail_doctor + "\nDoctor code:\n\t" + code_doctor
+									+ "\nPassword doctor:\n\t" + password_doctor);
 
 						} catch (SQLException e) {
 
