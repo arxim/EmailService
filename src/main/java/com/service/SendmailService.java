@@ -4,6 +4,7 @@ package com.service;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import javax.activation.DataHandler;
@@ -26,27 +27,6 @@ import com.util.Property;
 public class SendmailService {
 
 	static Message msg = null;
-
-	/*
-	 * public static Properties getConfigSMTP() throws IOException {
-	 * 
-	 * String auth =
-	 * Property.getCenterProperty("/application.properties").getProperty(
-	 * "mail.smtp.auth"); String enable =
-	 * Property.getCenterProperty("/application.properties").getProperty(
-	 * "mail.smtp.starttls.enable"); String host =
-	 * Property.getCenterProperty("/application.properties").getProperty(
-	 * "mail.smtp.host"); String port =
-	 * Property.getCenterProperty("/application.properties").getProperty(
-	 * "mail.smtp.port");
-	 * 
-	 * // config gmail SMTP Properties props = new Properties();
-	 * props.put("mail.smtp.auth", auth); props.put("mail.smtp.starttls.enable",
-	 * enable); props.put("mail.smtp.host", host); props.put("mail.smtp.port",
-	 * port);
-	 * 
-	 * return props; }
-	 */
 
 	public static Session getSession(String userSenderMail, String passwordSenderMail) throws IOException {
 
@@ -80,17 +60,10 @@ public class SendmailService {
 
 		msg.setRecipients(javax.mail.internet.MimeMessage.RecipientType.TO, sendTo);
 
-		// end .-
-
-		// one person
-		// 2.ตั่งค่าชื่อผู้รับ
-		// msg.setFrom(new InternetAddress(userSenderMail, false));
-		// 3.ตั่งค่าชื่อผู้รับ
-		// msg.setRecipients(Message.RecipientType.TO,
-		// InternetAddress.parse(userReciverMail));
 		// 4.ตั่งค่าหัวข้อจดหมาย
 		msg.setSubject("SpringBootSendMail");
-		// 5. ตั้งค่าเวลาส่งmsg.setSentDate(new Date());
+		// 5. ตั้งค่าเวลาส่ง
+		msg.setSentDate(new Date());
 
 		// 7. นำข้อความและfile pdf ใส่ลงใน Multipart
 		Multipart multipart = new MimeMultipart();

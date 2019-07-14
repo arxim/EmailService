@@ -5,18 +5,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.mail.MessagingException;
-import javax.mail.internet.AddressException;
-import com.dao.ExpenseDetailDAO;
-import com.dao.PaymentVoucherDAO;
-import com.dao.SummaryDFUnpaidByDetailAsOfDateDAO;
-import com.dao.SummaryRevenueByDetailDAO;
+import java.util.Properties;
 import com.util.DbConnector;
-import com.util.JDate;
-
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
@@ -26,7 +20,7 @@ import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import net.sf.jasperreports.export.SimplePdfExporterConfiguration;
 import net.sf.jasperreports.export.SimplePdfReportConfiguration;
 import com.util.Property;
-import com.dao.BatchDao;
+import com.dao.DoctorDAO;
 
 public class CreatePDFService {
 
@@ -78,116 +72,90 @@ public class CreatePDFService {
 
 	// ฟังก์ชันการ map ค่า parameter ดึงค่ามาจาก application.propertise
 	public JasperPrint getInJasperFile(String jasperFile, String code_doctor)
-			throws Exception {
+			throws JRException, IOException, SQLException {
 
 		// 1. รับไฟล์ jasper เพื่อ put ค่า
-		String file = new File(this.getClass().getResource("/jasperReport/" + jasperFile).getFile()).getAbsoluteFile()
-				.toString();
+		String file = new File(this.getClass().getResource("/jasperReport/" + jasperFile + ".jasper").getFile())
+				.getAbsoluteFile().toString();
 		// 1.1. รับค่า parameter
 		String from_doctor = code_doctor;
 		String to_doctor = code_doctor;
 		String doctor = code_doctor;
 		String hospitalCode = Property.getCenterProperty("/application.properties").getProperty("hospitalCode");
-		//String yyyy = Property.getCenterProperty("/application.properties").getProperty("yyyy");
-		//String mm = Property.getCenterProperty("/application.properties").getProperty("mm");
-		//String to_date = Property.getCenterProperty("/application.properties").getProperty("to_date");
+		String yyyy = Property.getCenterProperty("/application.properties").getProperty("yyyy");
+		String to_date = Property.getCenterProperty("/application.properties").getProperty("to_date");
 		String from_date = Property.getCenterProperty("/application.properties").getProperty("from_date");
+		String mm = Property.getCenterProperty("/application.properties").getProperty("mm");
 		String absoluteDiskPath = new File(CreatePDFService.class.getClass().getResource("/jasperReport").getFile())
 				.getPath().toString();
-
-		String mm = BatchDao.getMonth(hospitalCode);
-		String yyyy = BatchDao.getYear(hospitalCode);
-		String to_date = JDate.getLastDayOfMonth(Integer.parseInt(yyyy),Integer.parseInt(mm));
-		
-		
-		
 
 		Map<String, Object> params = new HashMap<String, Object>();
 		// รับค่า จาก Property
 
-		// --------------------------------------------------------------------------
-		String[] jasperFiles = Property.getCenterProperty("/application.properties").getProperty("jasperFiles")
-				.split(",");
+		Properties propJasper = Property.getProp(jasperFile);
 
-		for (String jasFile : jasperFiles) {
-			// เลือก ว่าจะเข้าอันไหนบ้าง
-			if (jasperFile.equals(jasFile)) {
-				System.out.print("-------------------------------------------------------------------------------\n"
-						+ jasFile + "\n");
+		for (java.util.Iterator<Object> it = propJasper.keySet().iterator(); it.hasNext();) {
+			String key = (String) it.next();
+			String value = propJasper.getProperty(key);
+			// System.out.println(" Key : " + key + " value : " + value);
+			// continue เป็นการบอกให้ไปทำ column ถัดไป ในที่นี้มอง column เป็น key ถัดไป
+			if (key.equals(jasperFile + ".hospital_code")) {
+				params.put(key.substring(jasperFile.length() + 1), hospitalCode);
+				System.out.println(key.substring(jasperFile.length() + 1) + "\t\t\t" + hospitalCode);
+				continue;
 
-				// หา คอลัมใน เจสเปอนั้นๆ
-				String[] getParaJas = Property.getCenterProperty("/application.properties")
-						.getProperty("jasperFiles[" + jasFile + "]").split(",");
-				System.out.println(getParaJas.length);
+			}
+			if (key.equals(jasperFile + ".from_doctor")) {
+				params.put(key.substring(jasperFile.length() + 1), from_doctor);
+				System.out.println(key.substring(jasperFile.length() + 1) + "\t\t\t" + from_doctor);
+				continue;
 
-				for (String parameter : getParaJas) {
-					// คอลัมที่เท่าไหร่ก็ตามที่เจอคำนี้ ให้ ทำการ save แบบนี้
-					if (parameter.equals("from_doctor")) {
+			}
+			if (key.equals(jasperFile + ".to_doctor")) {
+				params.put(key.substring(jasperFile.length() + 1), to_doctor);
+				System.out.println(key.substring(jasperFile.length() + 1) + "\t\t\t" + to_doctor);
+				continue;
 
-						System.out.println(parameter + "\t\t\t" + from_doctor);
-						params.put(parameter, from_doctor);
-						// ทำเสร็จไป column ถัดไป
-						continue;
+			}
+			if (key.equals(jasperFile + ".month")) {
+				params.put(key.substring(jasperFile.length() + 1), mm);
+				System.out.println(key.substring(jasperFile.length() + 1) + "\t\t\t" + mm);
+				continue;
 
-					}
-					if (parameter.equals("to_doctor")) {
+			}
+			if (key.equals(jasperFile + ".year")) {
+				params.put(key.substring(jasperFile.length() + 1), yyyy);
+				System.out.println(key.substring(jasperFile.length() + 1) + "\t\t\t" + yyyy);
+				continue;
 
-						System.out.println(parameter + "\t\t\t" + to_doctor);
-						params.put(parameter, to_doctor);
-						continue;
+			}
+			if (key.equals(jasperFile + ".SUBREPORT_DIR")) {
+				params.put(key.substring(jasperFile.length() + 1), absoluteDiskPath);
+				System.out.println(key.substring(jasperFile.length() + 1) + "\t\t\t" + absoluteDiskPath);
+				continue;
 
-					}
-					if (parameter.equals("doctor")) {
+			}
+			if (key.equals(jasperFile + ".from_date")) {
+				params.put(key.substring(jasperFile.length() + 1), from_date);
+				System.out.println(key.substring(jasperFile.length() + 1) + "\t\t\t" + from_date);
+				continue;
 
-						System.out.println(parameter + "\t\t\t" + doctor);
-						params.put(parameter, doctor);
-						continue;
+			}
+			if (key.equals(jasperFile + ".to_date")) {
+				params.put(key.substring(jasperFile.length() + 1), to_date);
+				System.out.println(key.substring(jasperFile.length() + 1) + "\t\t\t" + to_date);
+				continue;
 
-					}
-					if (parameter.equals("from_date")) {
-						System.out.println(parameter + "\t\t\t" + from_date);
-						params.put(parameter, from_date);
-						continue;
-					}
-					if (parameter.equals("to_date")) {
-						System.out.println(parameter + "\t\t\t" + to_date);
-						params.put(parameter, to_date);
-						continue;
-					}
-					if (parameter.equals("hospital_code")) {
-						System.out.println(parameter + "\t\t\t" + hospitalCode);
-						params.put(parameter, hospitalCode);
-						continue;
+			}
+			if (key.equals(jasperFile + ".doctor")) {
+				params.put(key.substring(jasperFile.length() + 1), doctor);
+				System.out.println(key.substring(jasperFile.length() + 1) + "\t\t\t" + doctor);
+				continue;
 
-					}
-					if (parameter.equals("month")) {
-						System.out.println(parameter + "\t\t\t" + mm);
-						params.put(parameter, mm);
-						continue;
+			} else {
+				params.put(key.substring(jasperFile.length() + 1), value);
+				System.out.println(key.substring(jasperFile.length() + 1) + "\t\t\t" + value);
 
-					}
-					if (parameter.equals("year")) {
-						System.out.println(parameter + "\t\t\t" + yyyy);
-						params.put(parameter, yyyy);
-						continue;
-
-					}
-					if (parameter.equals("SUBREPORT_DIR")) {
-						System.out.println(parameter + "\t\t\t" + absoluteDiskPath);
-						params.put(parameter, absoluteDiskPath);
-						continue;
-					} else {
-						System.out.println(parameter + "\t\t\t" + Property.getCenterProperty("/application.properties")
-								.getProperty("jasperFiles[" + jasFile + "][" + parameter + "]"));
-						params.put(parameter, Property.getCenterProperty("/application.properties")
-								.getProperty("jasperFiles[" + jasFile + "][" + parameter + "]"));
-					}
-
-				}
-
-				System.out.println("put data in method getInJasperFile Success");
-				// add column เสร็จให้ ไป fillReport
-				break;
 			}
 		}
 
@@ -195,48 +163,36 @@ public class CreatePDFService {
 		JasperPrint jasperPrint = JasperFillManager.fillReport(file, params, DbConnector.getDBConnection());
 		System.out.println("success fill report in method getInJasperFile()...");
 		return jasperPrint;
+
 	}
 
 	// check ว่าหมอมีข้อมูลใน ไฟล์นั้นๆไหม
-	public static int getNRowReport(String jasperFile, String code_doctor) throws Exception {
+	public static String getNRowReport(String jasperFile, int n_sent,ArrayList<HashMap<String, String>> list) throws IOException, SQLException {
 
-		int n_row = 0;
+		ArrayList<HashMap<String, String>> lists = list;
+		
+		String n_row = "";
+		// ตัด .jasper ออก
 		switch (jasperFile) {
 
 		case "ExpenseDetail.jasper":
-			try {
-				n_row = ExpenseDetailDAO.getNExpenseDetail(code_doctor);
-			} catch (SQLException | IOException e) {
-				System.out.println(
-						"fail get number of row jasper 'ExpenseDetail.jasper' file from method getNRowReport() !");
-			}
+			n_row = list.get(n_sent).get("EXPENSE").toString();
+			System.out.println(n_row);
 			break;
 
 		case "PaymentVoucher.jasper":
-			try {
-				n_row = PaymentVoucherDAO.getNPaymentVoucher(code_doctor);
-			} catch (SQLException | IOException e) {
-				System.out.println(
-						"fail get number of row jasper 'PaymentVoucher.jasper' file from method getNRowReport() !");
-			}
+			n_row = list.get(n_sent).get("VOUCHER").toString();
+			System.out.println(n_row);
 			break;
 
 		case "SummaryDFUnpaidByDetailAsOfDate.jasper":
-			try {
-				n_row = SummaryDFUnpaidByDetailAsOfDateDAO.getNSummaryDFUnpaidByDetailAsOfDate(code_doctor);
-			} catch (SQLException | IOException e) {
-				System.out.println(
-						"fail get number of row jasper 'SummaryDFUnpaidByDetailAsOfDate.jasper' file from method getNRowReport() !");
-			}
+			n_row = list.get(n_sent).get("UNPAID").toString();
+			System.out.println(n_row);
 			break;
 
 		case "SummaryRevenueByDetail.jasper":
-			try {
-				n_row = SummaryRevenueByDetailDAO.getNSummaryDFUnpaidByDetailAsOfDate(code_doctor);
-			} catch (SQLException | IOException e) {
-				System.out.println(
-						"fail get number of row jasper 'SummaryRevenueByDetail.jasper' file from method getNRowReport() !");
-			}
+			n_row = list.get(n_sent).get("REVENUE_DETAIL").toString();
+			System.out.println(n_row);
 			break;
 		}
 		System.out.println("\ncheck row in method getNRowReport Success");

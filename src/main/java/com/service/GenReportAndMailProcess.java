@@ -1,15 +1,16 @@
 package com.service;
 
-import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-
+import java.util.Properties;
+import java.util.TreeMap;
 import javax.mail.MessagingException;
-
 import org.quartz.CronExpression;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.JobDetail;
@@ -20,93 +21,86 @@ import org.quartz.SchedulerFactory;
 import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 import org.quartz.impl.StdSchedulerFactory;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean;
-import org.springframework.stereotype.Component;
-
-import com.ibm.icu.text.SimpleDateFormat;
 import com.dao.DoctorDAO;
+import com.ibm.icu.text.SimpleDateFormat;
 import com.util.Property;
-import com.service.CreatePDFService;
-import com.service.SendmailService;
-
 import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.JasperReport;
 
-@Component // ระบุ ต่อจาก@ComponentScan(basePackages = "com")
 public class GenReportAndMailProcess {
 
-	private CreatePDFService createPDFService = new CreatePDFService();
-	private SendmailService sendmailService = new SendmailService();
+	private static CreatePDFService createPDFService = new CreatePDFService();
 
-	int n_re;
-	int day = 15;
-	int sec = 10;
+	private static int n_sent = 0;// นับจำนวนที่ถูกส่งไปแล้ว เริ่มต้นยังไม่ถูกส่ง sened = 0
+	static int n_re;
+	static int day = 15;
+	static int sec = 0;
+	static int min = 0;
 	// int day = 1;// Test
-	String key = "open";
-	SimpleDateFormat sdf = null;
-	Date now = null;
-	String strDate = "";
+	static String key = "open";
+	static SimpleDateFormat sdf = null;
+	static Date now = null;
+	static String strDate = "";
+	static ArrayList<HashMap<String, String>> list = null;
 
-	// กระตุ้นงานด้วย Scheduled anotation ->method start() ทำงาน -> เกิดJob[1]
-	// @Scheduled(cron = "0 0/7 2 15 * ?")//Test
-	@Scheduled(cron = "0 0 2 15 * ?")
-	public void start() throws Exception {
+	public static void main(String status) throws IOException {
 
-		// เก็บจำนวนทั้งหมดตอนเริ่มต้น เพื่อให้ cron ทำงานในวันแรก
-		if (key.equals("open")) {
-			try {
-				System.out.println("\n-----------Spring send mail service...-----------");
-				n_re = DoctorDAO.getNReciver();
+		if (status.equals("true")) {
+			// เก็บจำนวนทั้งหมดตอนเริ่มต้น เพื่อให้ cron ทำงานในวันแรก
+			if (key.equals("open")) {
+				System.out.println("\n----------------Spring send mail service...----------------");
 
-			} catch (SQLException | IOException e) {
-				System.out.println("fail method start() !");
+				list = new ArrayList<HashMap<String, String>>();
+				try {
+					list = DoctorDAO.getReciver();
+				} catch (SQLException e2) {
+					// TODO Auto-generated catch block
+					System.out.println("fail get number docter from method main");
+				}
+
+				n_re = list.size();
+
+			}
+			// change cron
+			// กรณีพบว่า ต้องทำงานเพิ่ม เปลี่ยน cron
+			if (n_re > 0) {
+				// Job[1] คืนค่า > 0 (ยังเหลือผู้รับ) -> doSetTimeScherdule วันถัดไป -> Job[2]
+
+				System.out.println("\n\nTotal reciver	:	" + n_re + "	person");
+				System.out.println("\nProgram has beginning...Day " + day + " min " + min + " sec " + sec);
+
+				try {
+					deleteScheduler();
+					// setSchedule(sec + " " + min + " 2 " + day + " * ?");
+					setSchedule(sec + " " + min + " 2 " + day + " * ?");
+
+				} catch (ClassNotFoundException | NoSuchMethodException | SchedulerException | ParseException e) {
+					// TODO Auto-generated catch block
+					System.out.println("fail condition 'n_re > 0' from method start() !");
+				}
+
+			}
+
+			if (n_re == 0) {
+				// เปลี่ยนกุญแจ เป็นเปิดเมื่อ ทำจนเสร็จ รอวันถัดไป เพื่อรอรค่าหมอทั้งหมด
+				System.out.println("\n*****************send mail success this month*****************\n\n");
+				try {
+					deleteScheduler();
+					// เปิด key เมื่อ job ทำงานเสร็จ
+					day = 15;
+					n_sent = 0;
+					key = "open";
+
+				} catch (SchedulerException e) {
+
+					System.out.println("fail condition 'n_re == 0' from method start() !");
+				}
+			} else {
+				System.out.print("no response ...");
 			}
 
 		}
-
-		// change cron
-		// กรณีพบว่า ต้องทำงานเพิ่ม เปลี่ยน cron
-		if (n_re > 0) {
-			// Job[1] คืนค่า > 0 (ยังเหลือผู้รับ) -> doSetTimeScherdule วันถัดไป -> Job[2]
-
-			sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-			now = new Date();
-			strDate = sdf.format(now);
-
-			System.out.println("\n\nTotal reciver	:	" + n_re + "	person");
-			System.out.println("\nProgram has beginning....it cooldown '" + sec + "' minute do '" + strDate + "'... ");
-
-			try {
-				deleteScheduler();
-				// setSchedule("0 " + day + " 2 15 * ?");// Test
-				setSchedule(sec + " 0 2 " + day + " * ?");
-
-			} catch (ClassNotFoundException | NoSuchMethodException | SchedulerException | ParseException e) {
-				// TODO Auto-generated catch block
-				System.out.println("fail condition 'n_re > 0' from method start() !");
-			}
-
-		}
-		if (n_re == 0) {
-			// เปลี่ยนกุญแจ เป็นเปิดเมื่อ ทำจนเสร็จ รอวันถัดไป เพื่อรอรค่าหมอทั้งหมด
-			System.out.println("\n*****************send mail success this month*****************\n\n");
-			try {
-				deleteScheduler();
-
-			} catch (SchedulerException e) {
-
-				System.out.println("fail condition 'n_re == 0' from method start() !");
-			}
-			// เปิด key เมื่อ job ทำงานเสร็จ
-			// day = 1;// Test
-			day = 15;
-			key = "open";
-		}
-
 	}
 
 	// method สร้าง job detail
@@ -154,7 +148,7 @@ public class GenReportAndMailProcess {
 				.startNow().build();
 	}
 
-	public void setSchedule(String cronExp)
+	public static void setSchedule(String cronExp)
 			throws SchedulerException, ClassNotFoundException, NoSuchMethodException, ParseException {
 
 		// get schedule
@@ -184,7 +178,7 @@ public class GenReportAndMailProcess {
 	}
 
 	// ฟังชัน ลบงานใน Schdule
-	public void deleteScheduler() throws SchedulerException {
+	public static void deleteScheduler() throws SchedulerException {
 
 		try {
 			SchedulerFactory sf = new StdSchedulerFactory();
@@ -200,50 +194,17 @@ public class GenReportAndMailProcess {
 
 	}
 
-	// อังกอริทึมสำหรับวนลูปส่งเมล์ทีละ ตามจำนวนสูงสุดของผู้ส่ง
-	public void loopSend() throws Exception {
-
-		// set variable
-		int sent = 0;
-		int n_reciver = 0;
-		int n_sent = 0;// นับจำนวนที่ถูกส่งไปแล้ว เริ่มต้นยังไม่ถูกส่ง sened = 0
-
-		String mail_doctor = "";
-		String code_doctor = "";
-		String password_doctor = "";
-		String pass = "true";
-
-		String[] account = null;
-		String[] jasperFiles = null;
-
-		List<JasperPrint> listJasper = null;
-
-		// processing
+	public static String getDate() {
 		sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 		now = new Date();
 		strDate = sdf.format(now);
 		System.out.println("\nJava cron job expression: " + strDate + "\n");
+		return strDate;
+	}
 
-		// account เก็บ อีเมล์ ผู้ส่งจาก data.properties
-		try {
-			account = Property.getCenterProperty("/application.properties").getProperty("sendersMail").split(",");
-			System.out.println("success get account from method loopSend()...");
-		} catch (IOException e1) {
-
-			System.out.println("fail get account from method loopSend() !");
-		}
-
-		// reciver มีชนิดเป็น int เก็บจำนวนหมอที่ยังไม่ถูกส่งจดหมาย
-		try {
-			n_reciver = DoctorDAO.getNReciver();
-			System.out.println("success get number reciver from method loopSend()...");
-
-		} catch (SQLException | IOException e1) {
-
-			System.out.println("fail get number reciver from method loopSend() !");
-		}
-
+	public static int getNumSender() {
 		// จำนวนการส่งสูงสุดของ Sender
+		int sent = 0;
 		try {
 			sent = Integer.parseInt(Property.getCenterProperty("/application.properties").getProperty("Nsend"));
 			System.out.println("success get max sender from method loopSend()...");
@@ -251,167 +212,205 @@ public class GenReportAndMailProcess {
 
 			System.out.println("fail get max sender from method loopSend() !");
 		}
+		return sent;
 
-		// เริ่มต้นวนแอคเค๊าที่จะใช้ส่ง i เริ่มต้นที่ 0 หมายถึง ใช้ อีเมล์ index ที่ 0
-		// ใน account ที่มีชนิดข้อมูลเป็น array string
-		for (int i = 0; i < account.length; i++) {
-			// กรณีไม่มีผู้รับ ให้หลุดจากลูป
-			if (n_reciver != 0) { //
-				// แยกอีเมล์กับพาสเวิสออกจากกัน index = 0 เก็บ ชื่อ e-mail , index = 1 เก็บ
-				// รหัสผ่านอีเมล์
-				String[] email = account[i].split("&");
-				System.out.println((i + 1) + ". Sending emails using < '" + email[0] + "' , '" + email[1] + "' >");
-				// วนส่งเท่ากับ จำนวนสูงสุดที่ใช้ในการส่ง
-				for (int j = 0; j < sent; j++) {
-					// กรณียังส่งไม่หมดให้ส่งต่อไป จนกว่าจะส่งครบ ให้หลุดจากลูป
-					if (n_reciver != 0) {
-						System.out.print("	(" + (n_sent + 1) + ") ");
+	}
 
-						try {
+	public static void main(String[] arg) {
+
+		try {
+			main("true");
+
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		}
+	}
+
+	static int n_reciver;
+
+	public static void loopSend() throws IOException, SQLException {
+
+		// Test
+		System.out.println("\n\nloopDoctor : " + (n_sent + 1) + "\n\n");
+		// -----------------------------------------------------------
+		// รับอีเทล์ sender
+		Properties propSender = Property.getProp("sendersMail");
+		// สร้างตัวแปรสำหรับ sort เรียงลำดับผู้ส่ง
+		TreeMap<Object, Object> mapTreeSender = new TreeMap<Object, Object>(propSender);
+		// เข้าถึง key กับ value ด้วย iterator
+		String keys = "";
+		String values = "";
+		String mail_doctor = "";
+		String code_doctor = "";
+		String password_doctor = "";
+		String[] email;
+
+		// รับจำนวนผู้รับ
+		// int n_reciver = getNumRecive();
+		if (key.equals("open")) {
+			n_reciver = list.size();
+		}
+
+		System.out.println(n_reciver);
+		// รับจำนวนการส่ง
+		int sent = getNumSender();
+
+		List<JasperPrint> listJasper = null;
+
+		// กรณีไม่มีผู้รับในฐานข้อมูล
+		if (n_reciver != 0) {
+
+			// หาแอคเค้าผู้ส่ง
+			for (Iterator<Object> itSender = mapTreeSender.keySet().iterator(); itSender.hasNext();) {
+
+				if (n_reciver != 0) {
+					// key เก็บ คีย์ที่เรียกของตัวนั้นๆ
+					keys = (String) itSender.next();
+					// value เก็บ อีเมล์ไอดี และพาสเวิส
+					values = propSender.getProperty(keys);
+					System.out.println("Key :" + keys + " value :" + values);
+					// สปลิสด้วย ","
+					email = values.split(",");
+					System.out.println("Sender e-mail using ID,password < " + email[0] + " , " + email[1] + " >\n");
+
+					// วนส่งตามจำนวนสูงสุดของผู้ส่ง
+					for (int j = 0; j < sent; j++) {
+
+						// กรณียังส่งไม่หมดให้ส่งต่อไป จนกว่าจะส่งครบ ให้หลุดจากลูป
+						if (n_reciver != 0) {
+							System.out.print("	(" + (n_sent + 1) + ") ");
+
 							// mail_doctor เก็บเมล์หมอแต่ละคน
-							try {
-								mail_doctor = DoctorDAO.getReciver().get(n_sent).get("EMAIL").toString();
-								System.out.println("success get mail reciver from method loopSend()...");
-
-							} catch (IOException e) {
-
-								System.out.println("fail get mail reciver from method loopSend() !");
-							}
-
+							mail_doctor = list.get(n_sent).get("EMAIL");
 							// code_doctor เก็บโค้ดหมอจากฐานข้อมูลแต่ละคน
-							try {
-								code_doctor = DoctorDAO.getReciver().get(n_sent).get("DOCTOR_CODE").toString();
-								System.out.println("success get code reciver from method loopSend()...");
-							} catch (IOException e) {
-
-								System.out.println("fail get code reciver from method loopSend() !");
-							}
-
-							try {
-								password_doctor = DoctorDAO.getPassEncryt(code_doctor).get(0).get("PASS_ENCRYPT")
-										.toString();
-								System.out.println("success get password reciver from method loopSend()...");
-							} catch (IOException e) {
-								System.out.println("fail get password reciver from method loopSend() !");
-							}
+							code_doctor = list.get(n_sent).get("DOCTOR_CODE");
+							// pass_encrytDoctor เก็บรหัสผ่านไฟล์ pdf
+							// password_doctor = list.get(n_sent).get("PASS_ENCRYPT");
+							password_doctor = "1234";
 
 							System.out.println("\nEmail:\n\t" + mail_doctor + "\nDoctor code:\n\t" + code_doctor
 									+ "\nPassword doctor:\n\t" + password_doctor);
 
-						} catch (SQLException e) {
+							// เรียงลำดับข้อมูล ไฟล์ jasperตามสิ่งที่ตั้งค่าไว้ใน properties
+							// construct > เก็บไฟล์ที่หมอจะต้องทำ ไว้ใน list
+							Properties propJasper = Property.getProp("jasperFiles");
+							TreeMap<Object, Object> mapTreeJasper = new TreeMap<Object, Object>(propJasper);
+							// ประกาศ listJasper เก็บไฟล์ jasper ที่มีการ put parameter เรียบร้อยแล้ว
+							listJasper = new ArrayList<JasperPrint>();
 
-							System.out.println("fail sql exception from method loopSend() !");
-						}
+							for (Iterator<Object> itJasper = mapTreeJasper.keySet().iterator(); itJasper.hasNext();) {
 
-						// jasperFiles เก็บไฟล์ jasper เป็น string array
-						try {
-							jasperFiles = Property.getCenterProperty("/application.properties")
-									.getProperty("jasperFiles").split(",");
-						} catch (IOException e) {
+								String keyJasper = (String) itJasper.next();
+								// เก็บชื่ไฟล์ jasper ทีละไฟล์
+								String valueJasperFileName = propJasper.getProperty(keyJasper);
+								System.out.println("Jasper : Key " + keyJasper + " value " + valueJasperFileName);
 
-							System.out.println("fail get jasper file from method loopSend() !");
-						}
-
-						// เก็บชื่อไฟล์ที่หมอจะต้องทำไว้ใน list
-						listJasper = new ArrayList<JasperPrint>();
-						createPDFService = new CreatePDFService();
-
-						// รับชื่อไฟล์ จาก ไฟล์ jasper ทั้งหมด
-						for (String jasperFile : jasperFiles) {
-
-							// เงื่อนไข ตรวจสอบก่อนทุกครั้งว่า ไฟล์เจสเปอนี้ หมอมีขข้อมูลไหม ?
-							// ถ้ามี row > 0 ให้ ทำการ put ข้อมูล เพื่อสร้างไฟลฺ pdf
-							// ส่ง ชื่อไฟล์และรหัสหมอไปทำ การตรวจสอบ
-							// เก็บชื่อไฟล์ที่จะต้องทำไว้ใน list
-							try {
-								if (CreatePDFService.getNRowReport(jasperFile, code_doctor) > 0) {
+								// ถ้าคนนัน้มีข้อมูลให้ put ค่า แล้วเก็บใน list แล้วนำไป ส่ง
+								if (!(CreatePDFService.getNRowReport(valueJasperFileName, n_sent, list)
+										.equals("0.00"))) {
 									// เก็บ JasperPrint ลงใน listJasper จากการส่งไป ยังฟังก์ชัน getInJasperFile()
 									// เพื่อ map parameter แล้ว
-									listJasper.add(createPDFService.getInJasperFile(jasperFile, code_doctor));
-								}
-							} catch (SQLException | IOException | JRException e) {
-								System.out.println(
-										"fail for loop 'get number use jasper file or put parameter in jasper file' from method loopSend() !");
-							}
-						}
+									System.out.println("SubString : "
+											+ valueJasperFileName.substring(0, valueJasperFileName.length() - 7));
 
-						// ต้องมีไฟล์ ถึงจะส่ง
-						if (listJasper.size() > 0) {
-							sendmailService = new SendmailService();
+									// Substring เริ่มต้นที่ index 0 จบที่ ชื่อไฟล์ ไม่ติดนามสกุล .jasper ออกมา , -7
+									// คือ จำนวนอักขระของคำว่า '.jasper'
+									try {
+										listJasper.add(createPDFService.getInJasperFile(
+												valueJasperFileName.substring(0, valueJasperFileName.length() - 7),
+												code_doctor));
+									} catch (JRException | SQLException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
 
-							// Mutireciver
-							List<String> userReciverMail = new ArrayList<String>();
-							// userReciverMail.add(mail_doctor);
-							userReciverMail.add("springbootrecive@gmail.com");
-							userReciverMail.add("wintazaza@gmail.com");
-							userReciverMail.add("spittayakorn@gmail.com");
-
-							try {
-
-								// multi reciver
-								sendmailService.sendmail(email[0], email[1], userReciverMail,
-										createPDFService.createFilePDF(listJasper, password_doctor));
-
-								pass = "true";
-
-							} catch (MessagingException | IOException e1) {
-								pass = "false";
-								System.out.println("fail send mail from method loopSend() !");
-							}
-
-							try {
-
-								if (pass.equals("true")) {
-									DoctorDAO.SendMailPaymentSuccess(code_doctor);
-									System.out.println("success stamp reciver from method loopSend()...");
 								}
 
-							} catch (SQLException | IOException e) {
-
-								System.out.println("fail sql exception from method loopSend()");
 							}
+
+							// construct > นำไฟล์ใน list ไปสร้าง pdf ไฟล์ > ส่งเมล์
+							SendmailService sendmailService = null;
+							String pass = "";
+							// ต้องมีไฟล์ ถึงจะส่ง
+							if (listJasper.size() > 0) {
+								sendmailService = new SendmailService();
+
+								// Mutireciver
+								List<String> userReciverMail = new ArrayList<String>();
+								// userReciverMail.add(mail_doctor);
+								userReciverMail.add("springbootrecive@gmail.com");
+								userReciverMail.add("wintazaza@gmail.com");
+								userReciverMail.add("spittayakorn@gmail.com");
+
+								try {
+
+									// multi reciver
+									sendmailService.sendmail(email[0], email[1], userReciverMail,
+											createPDFService.createFilePDF(listJasper, password_doctor));
+
+									pass = "true";
+
+								} catch (MessagingException | IOException e1) {
+									pass = "false";
+									System.out.println("fail send mail from method loopSend() !");
+								}
+
+								try {
+
+									if (pass.equals("true")) {
+										DoctorDAO.SendMailPaymentSuccess(code_doctor);
+										System.out
+												.println("success stam reciver from method loopSend()...Doctor code is "
+														+ code_doctor);
+									}
+
+								} catch (SQLException | IOException e) {
+
+									System.out.println("fail sql exception from method loopSend()");
+								}
+							}
+
+							System.out.println(listJasper);
+							n_sent++;
+							n_reciver--;
+
+						} else {
+							// n_reciver == 0
+							// เมื่อ ส่งหมด โดยไม่ครบ max sender นั้นๆ ให้หลุดจาก loop
+							System.out.println("End for loop method loopSend()...");
+							break;
 						}
 
-						n_sent++;
-						n_reciver--;
-
-					} else {
-						// n_reciver == 0
-						// เมื่อ ส่งหมด โดยไม่ครบ max sender นั้นๆ ให้หลุดจาก loop
-						System.out.println("-----End for loop method loopSend() -----");
-						break;
 					}
 
+				} else {
+					System.out.println("end  data...");
+					break;
 				}
-
-			} else {
-				// n_reciver == 0
-				// กรณีไม่มี ผู้รับตั้งแต่เริ่มต้น
-				System.out.println("----------End condition method loopSend()----------");
-				break;
 			}
 
+		} else {
+			System.out.println("no data...");
 		}
+
 		System.out.println("*-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-*\n");
-		System.out.println("send success	:	" + n_sent + "	person\n");
+		System.out.println("send success	:	" + n_sent + "	person from " + "" + "\n");
 		System.out.println("send tomorrow	:	" + n_reciver + "	person \n");
 		System.out.println("*-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-*");
-		// ผลลัพธ์สุดท้าย
 
-		if (n_reciver > 0) {
-			// เพิ่มวันถัดไป
-			day = day + 1;
-			System.out.println("To be con.. next Day " + day);
-		}
-		// สร้าง key = close ปิดkey
-		key = "close";
+		// -----------------------------------------------------------
 
-		// รับจำนวนปัจจุบัน เพื่อให้ method start() ตรวยสอบว่ายังมีคนอีกไหม ? ->
-		// มีให้ทำต่อ : ไม่มี รอให้ anotation Schdule กระตุ้นทำเดือนถัดไป
 		n_re = n_reciver;
+		if (n_re > 0) {
+			System.out.println("\n\ncontinue...\n\n");
+		}
+		// day = day + 1;
+		min = min + 2;
+		key = "false";
 
-		// กลับมายัง method start() -> check ว่า n_re =0 ?
-		start();
+		main("true");
+
 	}
 
 }
