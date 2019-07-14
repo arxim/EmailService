@@ -21,13 +21,17 @@ import org.quartz.SchedulerFactory;
 import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 import org.quartz.impl.StdSchedulerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean;
+import org.springframework.stereotype.Component;
+
 import com.dao.DoctorDAO;
 import com.ibm.icu.text.SimpleDateFormat;
 import com.util.Property;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperPrint;
 
+//@Component
 public class GenReportAndMailProcess {
 
 	private static CreatePDFService createPDFService = new CreatePDFService();
@@ -44,6 +48,7 @@ public class GenReportAndMailProcess {
 	static String strDate = "";
 	static ArrayList<HashMap<String, String>> list = null;
 
+	// @Scheduled(cron = "0 58 1 15 * ?")
 	public static void main(String status) throws IOException {
 
 		if (status.equals("true")) {
@@ -95,9 +100,9 @@ public class GenReportAndMailProcess {
 
 					System.out.println("fail condition 'n_re == 0' from method start() !");
 				}
-			} 
+			}
 
-		}else {
+		} else {
 			System.out.print("not equal 'true' ...");
 		}
 	}
