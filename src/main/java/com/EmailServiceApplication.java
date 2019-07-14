@@ -8,7 +8,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @Configuration
-@ComponentScan(basePackages = "com")
+@ComponentScan(basePackages = "com") // ระบุที่อยู่ ให้ Schdule กระตุ้น
 @EnableScheduling
 
 public class EmailServiceApplication {

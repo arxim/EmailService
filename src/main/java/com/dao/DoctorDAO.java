@@ -51,10 +51,10 @@ public class DoctorDAO {
 
 			// ps.setString(1, doctorCode);
 			listReciver = DbConnector.convertArrayListHashMap(ps.executeQuery());
-			System.out.println("ExecuteQuery Success method >> getReciver");
+			// System.out.println("success getReciver() from DoctorDAO");
 
 		} catch (Exception e) {
-			// TODO: handle exception
+			System.out.println("fail getReciver() from DoctorDAO");
 		} finally {
 			if (ps != null) {
 				ps.close();
@@ -103,7 +103,7 @@ public class DoctorDAO {
 
 			// ps.setString(1, doctorCode);
 			listReciver = DbConnector.convertArrayListHashMap(ps.executeQuery());
-			System.out.println("ExecuteQuery Success method >> getPassEncryt");
+			System.out.println("success getPassEncryt() from DoctorDAO");
 		} catch (Exception e) {
 			// TODO: handle exception
 		} finally {
@@ -135,7 +135,7 @@ public class DoctorDAO {
 			ps.setString(4, yyyy);
 
 			ps.executeQuery();
-			System.out.println("ExecuteQuery Success method >> SendMailPaymentSuccess");
+			System.out.println("success SendMailPaymentSuccess() from DoctorDAO");
 
 		} catch (Exception e) {
 

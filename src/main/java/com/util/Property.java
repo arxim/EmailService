@@ -31,12 +31,7 @@ public class Property {
 	}
 
 	public static Properties getProp(String keys) throws IOException {
-		/*
-		 * // โหลดสิ่งของทั้งหมดลงใน prop แล้วค่อยเรียกใช้ Properties prop = new
-		 * Properties(); Properties getProp = new Properties(); InputStream in =
-		 * Properties.class.getResourceAsStream("/application.properties");
-		 * prop.load(in); in.close();
-		 */
+
 		System.out.println("\n");
 		prop = getCenterProperty("/application.properties");
 		// รับ input
@@ -94,6 +89,7 @@ public class Property {
 				}
 			}
 		}
+		System.out.println("\n\n");
 
 		return properties;
 

@@ -31,8 +31,7 @@ public class CreatePDFService {
 	ByteArrayOutputStream pdfOutputStream = null;
 
 	// สร้างไฟล์ pdf
-	public ByteArrayOutputStream createFilePDF(List<JasperPrint> listJasper, String passwords)
-			throws JRException, IOException, SQLException, AddressException, MessagingException {
+	public ByteArrayOutputStream createFilePDF(List<JasperPrint> listJasper, String passwords) {
 
 		// String password = "1234";
 		String password = passwords;
@@ -64,9 +63,12 @@ public class CreatePDFService {
 		exporter.setConfiguration(reportConfig);
 		exporter.setConfiguration(exportConfig);
 
-		exporter.exportReport();
-
-		System.out.println("Export file PDF success...!!");
+		try {
+			exporter.exportReport();
+			System.out.println("success export roport jasper file from method createFilePDF() !");
+		} catch (JRException e) {
+			System.out.println("fail export roport jasper file from method createFilePDF() !");
+		}
 
 		return pdfOutputStream;
 
@@ -195,30 +197,50 @@ public class CreatePDFService {
 
 		// creatReport
 		JasperPrint jasperPrint = JasperFillManager.fillReport(file, params, DbConnector.getDBConnection());
-		System.out.println("fill Report in method getInJasperFile Success");
+		System.out.println("success fill report in method getInJasperFile()...");
 		return jasperPrint;
 	}
 
 	// check ว่าหมอมีข้อมูลใน ไฟล์นั้นๆไหม
-	public static int getNRowReport(String jasperFile, String code_doctor) throws SQLException, IOException {
+	public static int getNRowReport(String jasperFile, String code_doctor) {
 
 		int n_row = 0;
 		switch (jasperFile) {
 
 		case "ExpenseDetail.jasper":
-			n_row = ExpenseDetailDAO.getNExpenseDetail(code_doctor);
+			try {
+				n_row = ExpenseDetailDAO.getNExpenseDetail(code_doctor);
+			} catch (SQLException | IOException e) {
+				System.out.println(
+						"fail get number of row jasper 'ExpenseDetail.jasper' file from method getNRowReport() !");
+			}
 			break;
 
 		case "PaymentVoucher.jasper":
-			n_row = PaymentVoucherDAO.getNPaymentVoucher(code_doctor);
+			try {
+				n_row = PaymentVoucherDAO.getNPaymentVoucher(code_doctor);
+			} catch (SQLException | IOException e) {
+				System.out.println(
+						"fail get number of row jasper 'PaymentVoucher.jasper' file from method getNRowReport() !");
+			}
 			break;
 
 		case "SummaryDFUnpaidByDetailAsOfDate.jasper":
-			n_row = SummaryDFUnpaidByDetailAsOfDateDAO.getNSummaryDFUnpaidByDetailAsOfDate(code_doctor);
+			try {
+				n_row = SummaryDFUnpaidByDetailAsOfDateDAO.getNSummaryDFUnpaidByDetailAsOfDate(code_doctor);
+			} catch (SQLException | IOException e) {
+				System.out.println(
+						"fail get number of row jasper 'SummaryDFUnpaidByDetailAsOfDate.jasper' file from method getNRowReport() !");
+			}
 			break;
 
 		case "SummaryRevenueByDetail.jasper":
-			n_row = SummaryRevenueByDetailDAO.getNSummaryDFUnpaidByDetailAsOfDate(code_doctor);
+			try {
+				n_row = SummaryRevenueByDetailDAO.getNSummaryDFUnpaidByDetailAsOfDate(code_doctor);
+			} catch (SQLException | IOException e) {
+				System.out.println(
+						"fail get number of row jasper 'SummaryRevenueByDetail.jasper' file from method getNRowReport() !");
+			}
 			break;
 		}
 		System.out.println("\ncheck row in method getNRowReport Success");

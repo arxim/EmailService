@@ -60,9 +60,9 @@ public class SummaryDFUnpaidByDetailAsOfDateDAO {
 			ps.setString(6, "%");
 
 			checkFile = DbConnector.convertArrayListHashMap(ps.executeQuery());
-			System.out.println("ExecuteQuery Success method >> getSummaryDFUnpaidByDetailAsOfDate");
+			System.out.println("success execute query method >> getSummaryDFUnpaidByDetailAsOfDate...");
 		} catch (Exception e) {
-			// TODO: handle exception
+			System.out.println("fail execute query method >> getSummaryDFUnpaidByDetailAsOfDate !!");
 		} finally {
 			if (ps != null) {
 				ps.close();

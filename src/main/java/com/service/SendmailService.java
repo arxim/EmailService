@@ -66,12 +66,12 @@ public class SendmailService {
 		msg = new MimeMessage(getSession(userSenderMail, passwordSenderMail));
 
 		// send to Multiple recipients .-
-
 		InternetAddress sentFrom = new InternetAddress(userSenderMail);
 		msg.setFrom(sentFrom); // Set the sender address
 
 		List<String> list = userReciverMail;
 
+		// multi reciver
 		InternetAddress[] sendTo = new InternetAddress[list.size()];
 		for (int i = 0; i < list.size(); i++) {
 			System.out.println("Send to:" + list.get(i));
@@ -82,6 +82,7 @@ public class SendmailService {
 
 		// end .-
 
+		// one person
 		// 2.ตั่งค่าชื่อผู้รับ
 		// msg.setFrom(new InternetAddress(userSenderMail, false));
 		// 3.ตั่งค่าชื่อผู้รับ
@@ -117,7 +118,7 @@ public class SendmailService {
 		msg.setContent(multipart);
 		// 9. ส่ง
 		Transport.send(msg);
-		System.out.println("Send mail success...!!");
+		System.out.println("send mail success...");
 
 	}
 

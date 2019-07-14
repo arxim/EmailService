@@ -53,10 +53,10 @@ public class PaymentVoucherDAO {
 			ps.setString(4, to_doctor);
 
 			checkFile = DbConnector.convertArrayListHashMap(ps.executeQuery());
-			System.out.println("ExecuteQuery Success method >> getPaymentVoucher");
+			System.out.println("success execute query method >> getPaymentVoucher ...");
 
 		} catch (Exception e) {
-			// TODO: handle exception
+			System.out.println("fail execute query method >> getPaymentVoucher !!");
 		} finally {
 			if (ps != null) {
 				ps.close();

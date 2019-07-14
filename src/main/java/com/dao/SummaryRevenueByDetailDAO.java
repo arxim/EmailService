@@ -21,11 +21,11 @@ public class SummaryRevenueByDetailDAO {
 		String hospitalCode = Property.getCenterProperty("/application.properties").getProperty("hospitalCode");
 		String yyyy = Property.getCenterProperty("/application.properties").getProperty("yyyy");
 		String mm = Property.getCenterProperty("/application.properties").getProperty("mm");
-		//String mm = null;
-		//String yyyy = null;
+		// String mm = null;
+		// String yyyy = null;
 		try {
-		//	mm = BatchDao.getMonth(hospitalCode);
-		//	yyyy = BatchDao.getYear(hospitalCode);
+			// mm = BatchDao.getMonth(hospitalCode);
+			// yyyy = BatchDao.getYear(hospitalCode);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -175,10 +175,10 @@ public class SummaryRevenueByDetailDAO {
 			ps.setString(33, "%");
 
 			checkFile = DbConnector.convertArrayListHashMap(ps.executeQuery());
-			System.out.println("ExecuteQuery Success method >> getSummaryDFUnpaidByDetailAsOfDate");
+			System.out.println("success execute query method >> getSummaryDFUnpaidByDetailAsOfDate...");
 
 		} catch (Exception e) {
-			// TODO: handle exception
+			System.out.println("fail execute query method >> getSummaryDFUnpaidByDetailAsOfDate...");
 		} finally {
 			if (ps != null) {
 				ps.close();
