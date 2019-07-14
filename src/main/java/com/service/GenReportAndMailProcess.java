@@ -316,16 +316,25 @@ public class GenReportAndMailProcess {
 							userReciverMail.add("wintazaza@gmail.com");
 							userReciverMail.add("spittayakorn@gmail.com");
 
+							String pass = "true";
 							try {
 								sendmailService.sendmail(email[0], email[1], userReciverMail,
 										createPDFService.createFilePDF(listJasper, password_doctor));
+								pass = "true";
+
 							} catch (MessagingException | IOException | JRException | SQLException e) {
 								// TODO Auto-generated catch block
+								pass = "false";
 								System.out.println("Error from method loopSend Check sendmailService.sendmail");
 							}
 							// s.sendmail(email[0], email[1], userReciverMail, c.createFilePDF(listJasper));
 							try {
-								DoctorDAO.SendMailPaymentSuccess(code_doctor);
+
+								if (pass.equals("true")) {
+									DoctorDAO.SendMailPaymentSuccess(code_doctor);
+									System.out.println("stam user success");
+								}
+
 							} catch (SQLException | IOException e) {
 								// TODO Auto-generated catch block
 								System.out.println("Error from method loopSend Check DoctorDAO.SendMailPaymentSuccess");

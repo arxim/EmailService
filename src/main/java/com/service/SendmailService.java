@@ -27,23 +27,27 @@ public class SendmailService {
 
 	static Message msg = null;
 
-	/*public static Properties getConfigSMTP() throws IOException {
+	/*
+	 * public static Properties getConfigSMTP() throws IOException {
+	 * 
+	 * String auth =
+	 * Property.getCenterProperty("/application.properties").getProperty(
+	 * "mail.smtp.auth"); String enable =
+	 * Property.getCenterProperty("/application.properties").getProperty(
+	 * "mail.smtp.starttls.enable"); String host =
+	 * Property.getCenterProperty("/application.properties").getProperty(
+	 * "mail.smtp.host"); String port =
+	 * Property.getCenterProperty("/application.properties").getProperty(
+	 * "mail.smtp.port");
+	 * 
+	 * // config gmail SMTP Properties props = new Properties();
+	 * props.put("mail.smtp.auth", auth); props.put("mail.smtp.starttls.enable",
+	 * enable); props.put("mail.smtp.host", host); props.put("mail.smtp.port",
+	 * port);
+	 * 
+	 * return props; }
+	 */
 
-		String auth = Property.getCenterProperty("/application.properties").getProperty("mail.smtp.auth");
-		String enable = Property.getCenterProperty("/application.properties").getProperty("mail.smtp.starttls.enable");
-		String host = Property.getCenterProperty("/application.properties").getProperty("mail.smtp.host");
-		String port = Property.getCenterProperty("/application.properties").getProperty("mail.smtp.port");
-
-		// config gmail SMTP
-		Properties props = new Properties();
-		props.put("mail.smtp.auth", auth);
-		props.put("mail.smtp.starttls.enable", enable);
-		props.put("mail.smtp.host", host);
-		props.put("mail.smtp.port", port);
-
-		return props;
-	}*/
-	
 	public static Session getSession(String userSenderMail, String passwordSenderMail) throws IOException {
 
 		// รับชื่อผู้ใช้ อีเมล์,รหัสผ่านอีเมล์ เข้าถึงเมล์ผู้ใช้
