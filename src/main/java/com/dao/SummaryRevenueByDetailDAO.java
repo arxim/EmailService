@@ -14,22 +14,17 @@ public class SummaryRevenueByDetailDAO {
 	static ArrayList<HashMap<String, String>> checkFile = null;
 
 	public static ArrayList<HashMap<String, String>> getSummaryDFUnpaidByDetailAsOfDate(String code_doctor)
-			throws IOException, SQLException {
+			throws Exception {
 
 		String from_doctor = code_doctor;
 		String to_doctor = code_doctor;
 		String hospitalCode = Property.getCenterProperty("/application.properties").getProperty("hospitalCode");
-		String yyyy = Property.getCenterProperty("/application.properties").getProperty("yyyy");
-		String mm = Property.getCenterProperty("/application.properties").getProperty("mm");
-		// String mm = null;
-		// String yyyy = null;
-		try {
-			// mm = BatchDao.getMonth(hospitalCode);
-			// yyyy = BatchDao.getYear(hospitalCode);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		
+		//String yyyy = Property.getCenterProperty("/application.properties").getProperty("yyyy");
+		//String mm = Property.getCenterProperty("/application.properties").getProperty("mm");
+		
+		String mm = BatchDao.getMonth(hospitalCode);
+		String yyyy = BatchDao.getYear(hospitalCode);
 
 		// แสดงค่าที่ต้องการ
 		checkFile = new ArrayList<>();
@@ -188,7 +183,7 @@ public class SummaryRevenueByDetailDAO {
 
 	}
 
-	public static int getNSummaryDFUnpaidByDetailAsOfDate(String code_doctor) throws SQLException, IOException {
+	public static int getNSummaryDFUnpaidByDetailAsOfDate(String code_doctor) throws Exception {
 
 		// return 1;//test
 		return getSummaryDFUnpaidByDetailAsOfDate(code_doctor).size();

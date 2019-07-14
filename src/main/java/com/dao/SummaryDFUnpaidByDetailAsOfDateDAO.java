@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import com.util.JDate;
 import com.util.DbConnector;
 import com.util.Property;
 
@@ -14,10 +15,17 @@ public class SummaryDFUnpaidByDetailAsOfDateDAO {
 	static ArrayList<HashMap<String, String>> checkFile = null;
 
 	public static ArrayList<HashMap<String, String>> getSummaryDFUnpaidByDetailAsOfDate(String code_doctor)
-			throws IOException, SQLException {
+			throws Exception {
 
-		String to_date = Property.getCenterProperty("/application.properties").getProperty("to_date");
+		
+		String hospitalCode = Property.getCenterProperty("/application.properties").getProperty("hospitalCode");
+		String mm = BatchDao.getMonth(hospitalCode);
+		String yyyy = BatchDao.getYear(hospitalCode);
+		
+		//String to_date = Property.getCenterProperty("/application.properties").getProperty("to_date");
+		String to_date = JDate.getLastDayOfMonth(Integer.parseInt(yyyy),Integer.parseInt(mm));
 		String from_date = Property.getCenterProperty("/application.properties").getProperty("from_date");
+		
 
 		// แสดงค่าที่ต้องการ
 		checkFile = new ArrayList<>();
@@ -72,7 +80,7 @@ public class SummaryDFUnpaidByDetailAsOfDateDAO {
 
 	}
 
-	public static int getNSummaryDFUnpaidByDetailAsOfDate(String code_doctor) throws SQLException, IOException {
+	public static int getNSummaryDFUnpaidByDetailAsOfDate(String code_doctor) throws Exception {
 
 		// return 1;//test
 		return getSummaryDFUnpaidByDetailAsOfDate(code_doctor).size();

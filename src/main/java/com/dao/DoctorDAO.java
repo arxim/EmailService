@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import com.dao.BatchDao;
 import com.util.DbConnector;
 import com.util.Property;
 
@@ -16,20 +17,17 @@ public class DoctorDAO {
 	// ------------------------------------------------------------------------------------
 	// Copy Code from vtnjar
 	// get Email and Doctor code from mm,yyyy,hospital code
-	public static ArrayList<HashMap<String, String>> getReciver() throws SQLException, IOException {
+	public static ArrayList<HashMap<String, String>> getReciver() throws Exception {
 
 		String hospitalCode = Property.getCenterProperty("/application.properties").getProperty("hospitalCode");
-		String yyyy = Property.getCenterProperty("/application.properties").getProperty("yyyy");
-		String mm = Property.getCenterProperty("/application.properties").getProperty("mm");
-		// String mm = null;
-		// String yyyy = null;
-		try {
-			// mm = BatchDao.getMonth(hospitalCode);
-			// yyyy = BatchDao.getYear(hospitalCode);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		//String yyyy = Property.getCenterProperty("/application.properties").getProperty("yyyy");
+		//String mm = Property.getCenterProperty("/application.properties").getProperty("mm");
+		
+		String mm = BatchDao.getMonth(hospitalCode);
+		String yyyy = BatchDao.getYear(hospitalCode);
+		
+		
+		
 
 		// แสดงค่าที่ต้องการ
 		listReciver = new ArrayList<>();
@@ -64,7 +62,7 @@ public class DoctorDAO {
 		return listReciver;
 	}
 
-	public static int getNReciver() throws SQLException, IOException {
+	public static int getNReciver() throws Exception {
 
 		// return 1;//test
 		return getReciver().size();
@@ -72,11 +70,16 @@ public class DoctorDAO {
 
 	// get password will encrytion from mm,yyyy,hospital_code,doctor_code :)
 	public static ArrayList<HashMap<String, String>> getPassEncryt(String code_doctor)
-			throws SQLException, IOException {
+			throws Exception {
 
 		String hospitalCode = Property.getCenterProperty("/application.properties").getProperty("hospitalCode");
-		String yyyy = Property.getCenterProperty("/application.properties").getProperty("yyyy");
-		String mm = Property.getCenterProperty("/application.properties").getProperty("mm");
+		//String yyyy = Property.getCenterProperty("/application.properties").getProperty("yyyy");
+		//String mm = Property.getCenterProperty("/application.properties").getProperty("mm");
+		String mm = BatchDao.getMonth(hospitalCode);
+		String yyyy = BatchDao.getYear(hospitalCode);
+		
+		
+		
 		// แสดงค่าที่ต้องการ
 		listReciver = new ArrayList<>();
 		PreparedStatement ps = null;
@@ -116,11 +119,15 @@ public class DoctorDAO {
 	}
 
 	// Stam code หมอ แต่ละคนว่าได้ส่งแล้วง
-	public static void SendMailPaymentSuccess(String code_doctor) throws SQLException, IOException {
+	public static void SendMailPaymentSuccess(String code_doctor) throws Exception {
 		String hospitalCode = Property.getCenterProperty("/application.properties").getProperty("hospitalCode");
-		String yyyy = Property.getCenterProperty("/application.properties").getProperty("yyyy");
-		String mm = Property.getCenterProperty("/application.properties").getProperty("mm");
+		//String yyyy = Property.getCenterProperty("/application.properties").getProperty("yyyy");
+		//String mm = Property.getCenterProperty("/application.properties").getProperty("mm");
 
+		String mm = BatchDao.getMonth(hospitalCode);
+		String yyyy = BatchDao.getYear(hospitalCode);
+		
+		
 		PreparedStatement ps = null;
 		String SQL = "UPDATE PAYMENT_MONTHLY \r\n" + "		            SET \r\n"
 				+ "		               STATUS_MODIFY = 'T' \r\n" + "		           WHERE DOCTOR_CODE = ?\r\n"

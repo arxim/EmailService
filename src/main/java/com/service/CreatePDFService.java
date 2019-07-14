@@ -15,6 +15,8 @@ import com.dao.PaymentVoucherDAO;
 import com.dao.SummaryDFUnpaidByDetailAsOfDateDAO;
 import com.dao.SummaryRevenueByDetailDAO;
 import com.util.DbConnector;
+import com.util.JDate;
+
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
@@ -76,7 +78,7 @@ public class CreatePDFService {
 
 	// ฟังก์ชันการ map ค่า parameter ดึงค่ามาจาก application.propertise
 	public JasperPrint getInJasperFile(String jasperFile, String code_doctor)
-			throws JRException, IOException, SQLException {
+			throws Exception {
 
 		// 1. รับไฟล์ jasper เพื่อ put ค่า
 		String file = new File(this.getClass().getResource("/jasperReport/" + jasperFile).getFile()).getAbsoluteFile()
@@ -86,22 +88,19 @@ public class CreatePDFService {
 		String to_doctor = code_doctor;
 		String doctor = code_doctor;
 		String hospitalCode = Property.getCenterProperty("/application.properties").getProperty("hospitalCode");
-		String yyyy = Property.getCenterProperty("/application.properties").getProperty("yyyy");
-		String to_date = Property.getCenterProperty("/application.properties").getProperty("to_date");
+		//String yyyy = Property.getCenterProperty("/application.properties").getProperty("yyyy");
+		//String mm = Property.getCenterProperty("/application.properties").getProperty("mm");
+		//String to_date = Property.getCenterProperty("/application.properties").getProperty("to_date");
 		String from_date = Property.getCenterProperty("/application.properties").getProperty("from_date");
-		String mm = Property.getCenterProperty("/application.properties").getProperty("mm");
 		String absoluteDiskPath = new File(CreatePDFService.class.getClass().getResource("/jasperReport").getFile())
 				.getPath().toString();
 
-		// String mm = null;
-		// String yyyy = null;
-		try {
-			// mm = BatchDao.getMonth(hospitalCode);
-			// yyyy = BatchDao.getYear(hospitalCode);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		String mm = BatchDao.getMonth(hospitalCode);
+		String yyyy = BatchDao.getYear(hospitalCode);
+		String to_date = JDate.getLastDayOfMonth(Integer.parseInt(yyyy),Integer.parseInt(mm));
+		
+		
+		
 
 		Map<String, Object> params = new HashMap<String, Object>();
 		// รับค่า จาก Property
@@ -199,7 +198,7 @@ public class CreatePDFService {
 	}
 
 	// check ว่าหมอมีข้อมูลใน ไฟล์นั้นๆไหม
-	public static int getNRowReport(String jasperFile, String code_doctor) {
+	public static int getNRowReport(String jasperFile, String code_doctor) throws Exception {
 
 		int n_row = 0;
 		switch (jasperFile) {

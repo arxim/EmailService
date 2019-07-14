@@ -54,7 +54,7 @@ public class GenReportAndMailProcess {
 	// กระตุ้นงานด้วย Scheduled anotation ->method start() ทำงาน -> เกิดJob[1]
 	// @Scheduled(cron = "0 0/7 2 15 * ?")//Test
 	@Scheduled(cron = "0 0 2 15 * ?")
-	public void start() {
+	public void start() throws Exception {
 
 		// เก็บจำนวนทั้งหมดตอนเริ่มต้น เพื่อให้ cron ทำงานในวันแรก
 		if (key.equals("open")) {
@@ -201,7 +201,7 @@ public class GenReportAndMailProcess {
 	}
 
 	// อังกอริทึมสำหรับวนลูปส่งเมล์ทีละ ตามจำนวนสูงสุดของผู้ส่ง
-	public void loopSend() {
+	public void loopSend() throws Exception {
 
 		// set variable
 		int sent = 0;
@@ -219,8 +219,10 @@ public class GenReportAndMailProcess {
 		List<JasperPrint> listJasper = null;
 
 		// process
-
-		System.out.println("\nJava cron job expression: " + sdf.format(new Date()) + "\n");
+		sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+		now = new Date();
+		strDate = sdf.format(now);
+		System.out.println("\nJava cron job expression: " + strDate + "\n");
 
 		// account เก็บ อีเมล์ ผู้ส่งจาก data.properties
 		try {
@@ -376,6 +378,7 @@ public class GenReportAndMailProcess {
 					} else {
 						// n_reciver == 0
 						// เมื่อ ส่งหมด โดยไม่ครบ max sender นั้นๆ ให้หลุดจาก loop
+						System.out.println("-----End for loop method loopSend() -----");
 						break;
 					}
 
@@ -385,13 +388,15 @@ public class GenReportAndMailProcess {
 			} else {
 				// n_reciver == 0
 				// กรณีไม่มี ผู้รับตั้งแต่เริ่มต้น
+				System.out.println("-----End condition method loopSend() -----");
 				break;
 			}
 
 		}
-
+		System.out.println("*-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-*\n");
 		System.out.println("send success	:	" + n_sent + "	person\n");
 		System.out.println("send tomorrow	:	" + n_reciver + "	person \n");
+		System.out.println("*-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-*");
 		// ผลลัพธ์สุดท้าย
 
 		if (n_reciver > 0) {

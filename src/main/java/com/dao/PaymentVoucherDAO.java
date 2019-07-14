@@ -14,22 +14,18 @@ public class PaymentVoucherDAO {
 	static ArrayList<HashMap<String, String>> checkFile = null;
 
 	public static ArrayList<HashMap<String, String>> getPaymentVoucher(String code_doctor)
-			throws IOException, SQLException {
+			throws Exception {
 
 		String hospitalCode = Property.getCenterProperty("/application.properties").getProperty("hospitalCode");
 		String from_doctor = code_doctor;
 		String to_doctor = code_doctor;
-		String yyyy = Property.getCenterProperty("/application.properties").getProperty("yyyy");
-		String mm = Property.getCenterProperty("/application.properties").getProperty("mm");
-		// String mm = null;
-		// String yyyy = null;
-		try {
-			// mm = BatchDao.getMonth(hospitalCode);
-			// yyyy = BatchDao.getYear(hospitalCode);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		//String yyyy = Property.getCenterProperty("/application.properties").getProperty("yyyy");
+		//String mm = Property.getCenterProperty("/application.properties").getProperty("mm");
+		
+		String mm = BatchDao.getMonth(hospitalCode);
+		String yyyy = BatchDao.getYear(hospitalCode);
+		
+		
 
 		PreparedStatement ps = null;
 		String sql = "SELECT PM.YYYY,PM.MM, PM.TRANSACTION_DATE, PM.SUM_AMT, PM.DR_SUM_AMT, PM.HP_SUM_AMT,\r\n"
@@ -66,7 +62,7 @@ public class PaymentVoucherDAO {
 
 	}
 
-	public static int getNPaymentVoucher(String code_doctor) throws SQLException, IOException {
+	public static int getNPaymentVoucher(String code_doctor) throws Exception {
 
 		// return 1;//test
 		return getPaymentVoucher(code_doctor).size();

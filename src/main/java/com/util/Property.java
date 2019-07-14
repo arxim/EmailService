@@ -3,6 +3,7 @@ package com.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
+import java.util.ListIterator;
 import java.util.Properties;
 import java.util.Set;
 import com.service.SendmailService;
@@ -43,11 +44,10 @@ public class Property {
 			String input = k;
 			int lenIn = input.length();
 			// เช็คความยาวของ input
-
-			// สร้างพ้อยเตอร์ ชี้
+			System.out.print("group properties by key : " + input + "\n");
+			// สร้างพ้อยเตอร์ ชี้โดยใช้อินเทอเรเตอร์เป็นตัวหาสมาชิกแต่ละตัว
 			Set url = prop.keySet();
 			Iterator it = url.iterator();
-			// ต้องการ sort ค่า
 
 			properties = new Properties();
 			// ชี้พ้อยเตอร์ลงมาที่ตำแหน่งที่ 0
@@ -79,17 +79,17 @@ public class Property {
 					// เพื่อจัดเรียงข้อมูล
 					// เงี่ยนไขแรก กรอกเอาตัวที่ ใช่คำนั้นๆเลย
 					// เงื่อนไขที่สอง คำนั้น ที่ไม่ติดข้อความอะไร พร้อมที่จะ เรียกค่า sub key
+
 					if (((lenKey == lenIn) && (check == "true"))
 							|| ((lenKey >= lenIn) && (check == "true") && (key.charAt(lenIn) == '.'))) {
 						// แยกคีย์ออกมา
 						String stValue = (key + "=" + value).substring(lenIn + 1);
-						System.out.println(stValue);
+						System.out.println("\t" + stValue);
 						properties.put(key, value);
 					}
 				}
 			}
 		}
-		System.out.println("\n\n");
 
 		return properties;
 
