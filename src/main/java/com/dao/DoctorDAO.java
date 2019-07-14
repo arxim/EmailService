@@ -74,51 +74,6 @@ public class DoctorDAO {
 		return getReciver().size();
 	}
 
-	// get password will encrytion from mm,yyyy,hospital_code,doctor_code :)
-	public static ArrayList<HashMap<String, String>> getPassEncryt(String code_doctor)
-			throws SQLException, IOException {
-
-		String hospitalCode = Property.getCenterProperty("/application.properties").getProperty("hospitalCode");
-		String yyyy = Property.getCenterProperty("/application.properties").getProperty("yyyy");
-		String mm = Property.getCenterProperty("/application.properties").getProperty("mm");
-		// แสดงค่าที่ต้องการ
-		listReciver = new ArrayList<>();
-		PreparedStatement ps = null;
-		String sql = "SELECT T1.HOSPITAL_CODE, \r\n" + "		                  T2.CODE AS DOCTOR_CODE, \r\n"
-				+ "		                  COALESCE(NULLIF(T2.EMAIL,''),'0') EMAIL, \r\n"
-				+ "		                  CASE \r\n" + "		                      WHEN T2.LICENSE_ID = '' \r\n"
-				+ "		                      THEN T2.CODE \r\n"
-				+ "		                      ELSE T2.LICENSE_ID\r\n"
-				+ "		                  END AS PASS_ENCRYPT, \r\n" + "		                  T1.YYYY, \r\n"
-				+ "		                 T1.MM, \r\n" + "		                  T1.STATUS_MODIFY \r\n"
-				+ "		           FROM PAYMENT_MONTHLY T1 \r\n"
-				+ "		                LEFT JOIN DOCTOR T2 ON T1.HOSPITAL_CODE = T2.HOSPITAL_CODE \r\n"
-				+ "		                                       AND T1.DOCTOR_CODE = T2.CODE \r\n"
-				+ "		           WHERE T1.HOSPITAL_CODE = ? \r\n" + "		           		AND T2.CODE = ?\r\n"
-				+ "		           		AND T1.YYYY = ? \r\n" + "		                 AND T1.MM = ?\r\n"
-				+ "		                 AND (T1.STATUS_MODIFY = '' OR T1.STATUS_MODIFY IS NULL); ";
-		try (java.sql.Connection conn = DbConnector.getDBConnection()) {
-			// ต้องการเลือก row และ Colume ใชเ ArayList HashMap
-			ps = conn.prepareStatement(sql);
-			ps.setString(1, hospitalCode);
-			ps.setString(2, code_doctor);
-			ps.setString(3, yyyy);
-			ps.setString(4, mm);
-
-			// ps.setString(1, doctorCode);
-			listReciver = DbConnector.convertArrayListHashMap(ps.executeQuery());
-			System.out.println("success getPassEncryt() from DoctorDAO");
-		} catch (Exception e) {
-			// TODO: handle exception
-		} finally {
-			if (ps != null) {
-				ps.close();
-			}
-		}
-
-		return listReciver;
-	}
-
 	// Stam code หมอ แต่ละคนว่าได้ส่งแล้วง
 	public static void SendMailPaymentSuccess(String code_doctor) throws SQLException, IOException {
 		String hospitalCode = Property.getCenterProperty("/application.properties").getProperty("hospitalCode");
