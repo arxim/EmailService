@@ -82,7 +82,7 @@ public class Property {
 						|| ((lenKey >= lenIn) && (check == "true") && (key.charAt(lenIn) == '.'))) {
 					// แยกคีย์ออกมา
 					String stValue = (key + "=" + value).substring(lenIn + 1);
-					System.out.println((key + "=" + value).substring(lenIn + 1));
+					System.out.println(stValue);
 					properties.put(key, value);
 				}
 			}
