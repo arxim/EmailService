@@ -68,11 +68,7 @@ public class DoctorDAO {
 		return listReciver;
 	}
 
-	public static int getNReciver() throws SQLException, IOException {
 
-		// return 1;//test
-		return getReciver().size();
-	}
 
 	// Stam code หมอ แต่ละคนว่าได้ส่งแล้วง
 	public static void SendMailPaymentSuccess(String code_doctor) throws SQLException, IOException {

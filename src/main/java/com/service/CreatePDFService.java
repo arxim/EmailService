@@ -172,7 +172,7 @@ public class CreatePDFService {
 		ArrayList<HashMap<String, String>> lists = list;
 		
 		String n_row = "";
-		// ตัด .jasper ออก
+		
 		switch (jasperFile) {
 
 		case "ExpenseDetail.jasper":

@@ -59,7 +59,7 @@ public class Property {
 			url = prop.keySet();
 			it = url.iterator();
 
-			// ต้องการ sort ค่า
+			
 
 			properties = new Properties();
 			// ต้องการให้เรียงข้อมูล

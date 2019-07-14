@@ -72,7 +72,6 @@ public class GenReportAndMailProcess {
 
 				try {
 					deleteScheduler();
-					// setSchedule(sec + " " + min + " 2 " + day + " * ?");
 					setSchedule(sec + " " + min + " 2 " + day + " * ?");
 
 				} catch (ClassNotFoundException | NoSuchMethodException | SchedulerException | ParseException e) {
@@ -96,10 +95,10 @@ public class GenReportAndMailProcess {
 
 					System.out.println("fail condition 'n_re == 0' from method start() !");
 				}
-			} else {
-				System.out.print("no response ...");
-			}
+			} 
 
+		}else {
+			System.out.print("not equal 'true' ...");
 		}
 	}
 
@@ -395,7 +394,8 @@ public class GenReportAndMailProcess {
 		}
 
 		System.out.println("*-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-*\n");
-		System.out.println("send success	:	" + n_sent + "	person from " + "" + "\n");
+		System.out.println("total reciver	:	" + list.size() + "	person  " + "" + "\n");
+		System.out.println("send success	:	" + n_sent + "	person  " + "" + "\n");
 		System.out.println("send tomorrow	:	" + n_reciver + "	person \n");
 		System.out.println("*-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-*");
 
