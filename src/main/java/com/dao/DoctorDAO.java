@@ -19,33 +19,29 @@ public class DoctorDAO {
 	public static ArrayList<HashMap<String, String>> getReciver() throws SQLException, IOException {
 
 		String hospitalCode = Property.getCenterProperty("/application.properties").getProperty("hospitalCode");
-		//String yyyy = Property.getCenterProperty("/application.properties").getProperty("yyyy");
-		//String mm = Property.getCenterProperty("/application.properties").getProperty("mm");
-		String mm = null;
-		String yyyy = null;
+		String yyyy = Property.getCenterProperty("/application.properties").getProperty("yyyy");
+		String mm = Property.getCenterProperty("/application.properties").getProperty("mm");
+		// String mm = null;
+		// String yyyy = null;
 		try {
-			mm = BatchDao.getMonth(hospitalCode);
-			yyyy = BatchDao.getYear(hospitalCode);
+			// mm = BatchDao.getMonth(hospitalCode);
+			// yyyy = BatchDao.getYear(hospitalCode);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		// แสดงค่าที่ต้องการ
 		listReciver = new ArrayList<>();
 		PreparedStatement ps = null;
-		String sql = "\r\n" + "SELECT T1.DOCTOR_CODE, \r\n" + "				     T2.NAME_THAI,\r\n"
-				+ "				      T1.STATUS_MODIFY,\r\n" + "				      T2.EMAIL ,\r\n"
-				+ "			       T1.MM,\r\n" + "				      T1.YYYY \r\n"
-				+ "				FROM PAYMENT_MONTHLY T1 \r\n"
-				+ "				     LEFT JOIN DOCTOR T2 ON T1.HOSPITAL_CODE = T2.HOSPITAL_CODE \r\n"
-				+ "				                            AND T1.DOCTOR_CODE = T2.CODE \r\n"
-				+ "				WHERE T1.YYYY = ?      AND T1.MM = ?\r\n"
-				+ "				     AND (T1.STATUS_MODIFY = '' \r\n"
-				+ "				          OR T1.STATUS_MODIFY IS NULL) \r\n"
-				+ "				     AND T1.HOSPITAL_CODE = ?\r\n" + "				     AND DR_NET_PAID_AMT > 0 \r\n"
-				+ "				      AND DOCTOR_CODE IN (    SELECT CODE \r\n"
-				+ "				    FROM DOCTOR     WHERE EMAIL <> '' );";
+		String sql = "SELECT T1.DOCTOR_CODE, " + "       T2.NAME_THAI, " + "       T1.STATUS_MODIFY,"
+				+ "       T2.EMAIL ," + "       T1.MM," + "       T1.YYYY " + "FROM PAYMENT_MONTHLY T1 "
+				+ "     LEFT JOIN DOCTOR T2 ON T1.HOSPITAL_CODE = T2.HOSPITAL_CODE "
+				+ "                            AND T1.DOCTOR_CODE = T2.CODE " + "WHERE T1.YYYY = ? "
+				+ "      AND T1.MM = ? " + "      AND (T1.STATUS_MODIFY = '' "
+				+ "           OR T1.STATUS_MODIFY IS NULL) " + "      AND T1.HOSPITAL_CODE = ? "
+				+ "      AND DR_NET_PAID_AMT > 0 " + "      AND DOCTOR_CODE IN " + "( " + "    SELECT CODE "
+				+ "    FROM DOCTOR " + "    WHERE EMAIL <> '' " + ")";
 		try (java.sql.Connection conn = DbConnector.getDBConnection()) {
 			// ต้องการเลือก row และ Colume ใชเ ArayList HashMap
 			ps = conn.prepareStatement(sql);

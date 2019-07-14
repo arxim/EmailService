@@ -55,6 +55,7 @@ public class GenReportAndMailProcess {
 		if (key.equals("open")) {
 			try {
 				n_re = DoctorDAO.getNReciver();
+				System.out.print(n_re);
 			} catch (SQLException | IOException e) {
 				// TODO Auto-generated catch block
 				System.out.println(

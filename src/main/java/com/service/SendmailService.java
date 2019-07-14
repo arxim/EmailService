@@ -27,7 +27,7 @@ public class SendmailService {
 
 	static Message msg = null;
 
-	public static Properties getConfigSMTP() throws IOException {
+	/*public static Properties getConfigSMTP() throws IOException {
 
 		String auth = Property.getCenterProperty("/application.properties").getProperty("mail.smtp.auth");
 		String enable = Property.getCenterProperty("/application.properties").getProperty("mail.smtp.starttls.enable");
@@ -40,13 +40,14 @@ public class SendmailService {
 		props.put("mail.smtp.starttls.enable", enable);
 		props.put("mail.smtp.host", host);
 		props.put("mail.smtp.port", port);
-		return props;
-	}
 
+		return props;
+	}*/
+	
 	public static Session getSession(String userSenderMail, String passwordSenderMail) throws IOException {
 
 		// รับชื่อผู้ใช้ อีเมล์,รหัสผ่านอีเมล์ เข้าถึงเมล์ผู้ใช้
-		Session session = Session.getInstance(getConfigSMTP(), new javax.mail.Authenticator() {
+		Session session = Session.getInstance(Property.getProp("mail"), new javax.mail.Authenticator() {
 			protected PasswordAuthentication getPasswordAuthentication() {
 				return new PasswordAuthentication(userSenderMail, passwordSenderMail);
 			}
