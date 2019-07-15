@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.service.GenReportAndMailProcess;
-
+import com.service.GenReportAndMailProcessWithDoctorCode;
 
 @Controller
 @CrossOrigin
@@ -28,16 +28,24 @@ public class test {
 		System.out.println("response : " + status);
 
 		try {
-			GenReportAndMailProcess.main(status);
-			
-			
+			GenReportAndMailProcess.main();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+
 			e.printStackTrace();
 		}
 
-		return status;
+		return status + "Success";
 
+	}
+
+	@RequestMapping(value = "/test2", method = RequestMethod.POST)
+	public @ResponseBody String main2(@RequestParam("mail_doc") String mail_doc,
+			@RequestParam("code_doc") String code_doc, @RequestParam("password_doc") String password_doc,
+			@RequestParam("jasperFileName") String jasperFileName) {
+
+		GenReportAndMailProcessWithDoctorCode.sendByCodeDoctor(mail_doc, code_doc, password_doc, jasperFileName);
+
+		return mail_doc + code_doc + password_doc + jasperFileName + "Success";
 	}
 
 }

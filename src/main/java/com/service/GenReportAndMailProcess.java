@@ -37,74 +37,67 @@ public class GenReportAndMailProcess {
 	private static CreatePDFService createPDFService = new CreatePDFService();
 
 	private static int n_sent = 0;// นับจำนวนที่ถูกส่งไปแล้ว เริ่มต้นยังไม่ถูกส่ง sened = 0
-	static int n_re;
-	static int day = 15;
-	static int sec = 0;
-	static int min = 0;
-	// int day = 1;// Test
-	static String key = "open";
-	static SimpleDateFormat sdf = null;
-	static Date now = null;
-	static String strDate = "";
-	static ArrayList<HashMap<String, String>> list = null;
+	private static int n_re;
+	private static int day = 15;
+	private static int sec = 0;
+	private static int min = 0;
+	private static String key = "open";
+	private static ArrayList<HashMap<String, String>> list = null;
+	private static int n_reciver;
 
-	// @Scheduled(cron = "0 58 1 15 * ?")
-	public static void main(String status) throws IOException {
+	// @Scheduled(cron = "0 59 1 15 * ?")
+	public static void main() throws IOException {
 
-		if (status.equals("true")) {
-			// เก็บจำนวนทั้งหมดตอนเริ่มต้น เพื่อให้ cron ทำงานในวันแรก
-			if (key.equals("open")) {
-				System.out.println("\n----------------Spring send mail service...----------------");
+		// เก็บจำนวนทั้งหมดตอนเริ่มต้น เพื่อให้ cron ทำงานในวันแรก
+		if (key.equals("open")) {
+			System.out.println("\n----------------Spring send mail service...----------------");
 
-				list = new ArrayList<HashMap<String, String>>();
-				try {
-					list = DoctorDAO.getReciver();
-				} catch (SQLException e2) {
-					// TODO Auto-generated catch block
-					System.out.println("fail get number docter from method main");
-				}
+			list = new ArrayList<HashMap<String, String>>();
+			try {
+				list = DoctorDAO.getReciver();
+			} catch (SQLException e2) {
 
-				n_re = list.size();
-
-			}
-			// change cron
-			// กรณีพบว่า ต้องทำงานเพิ่ม เปลี่ยน cron
-			if (n_re > 0) {
-				// Job[1] คืนค่า > 0 (ยังเหลือผู้รับ) -> doSetTimeScherdule วันถัดไป -> Job[2]
-
-				System.out.println("\n\nTotal reciver	:	" + n_re + "	person");
-				System.out.println("\nProgram has beginning...Day " + day + " min " + min + " sec " + sec);
-
-				try {
-					deleteScheduler();
-					setSchedule(sec + " " + min + " 2 " + day + " * ?");
-
-				} catch (ClassNotFoundException | NoSuchMethodException | SchedulerException | ParseException e) {
-					// TODO Auto-generated catch block
-					System.out.println("fail condition 'n_re > 0' from method start() !");
-				}
-
+				System.out.println("fail get number docter from method main");
 			}
 
-			if (n_re == 0) {
-				// เปลี่ยนกุญแจ เป็นเปิดเมื่อ ทำจนเสร็จ รอวันถัดไป เพื่อรอรค่าหมอทั้งหมด
-				System.out.println("\n*****************send mail success this month*****************\n\n");
-				try {
-					deleteScheduler();
-					// เปิด key เมื่อ job ทำงานเสร็จ
-					day = 15;
-					n_sent = 0;
-					key = "open";
+			n_re = list.size();
 
-				} catch (SchedulerException e) {
-
-					System.out.println("fail condition 'n_re == 0' from method start() !");
-				}
-			}
-
-		} else {
-			System.out.print("not equal 'true' ...");
 		}
+		// change cron
+		// กรณีพบว่า ต้องทำงานเพิ่ม เปลี่ยน cron
+		if (n_re > 0) {
+			// Job[1] คืนค่า > 0 (ยังเหลือผู้รับ) -> doSetTimeScherdule วันถัดไป -> Job[2]
+
+			System.out.println("\n\nTotal reciver	:	" + n_re + "	person");
+			System.out.println("\nProgram has beginning...Day " + day + " min " + min + " sec " + sec);
+
+			try {
+				deleteScheduler();
+				setSchedule(sec + " " + min + " 2 " + day + " * ?");
+
+			} catch (ClassNotFoundException | NoSuchMethodException | SchedulerException | ParseException e) {
+
+				System.out.println("fail condition 'n_re > 0' from method start() !");
+			}
+
+		}
+
+		if (n_re == 0) {
+			// เปลี่ยนกุญแจ เป็นเปิดเมื่อ ทำจนเสร็จ รอวันถัดไป เพื่อรอรค่าหมอทั้งหมด
+			System.out.println("\n*****************send mail success this month*****************\n\n");
+			try {
+				deleteScheduler();
+				// เปิด key เมื่อ job ทำงานเสร็จ
+				day = 15;
+				n_sent = 0;
+				key = "open";
+
+			} catch (SchedulerException e) {
+
+				System.out.println("fail condition 'n_re == 0' from method start() !");
+			}
+		}
+
 	}
 
 	// method สร้าง job detail
@@ -198,14 +191,6 @@ public class GenReportAndMailProcess {
 
 	}
 
-	public static String getDate() {
-		sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-		now = new Date();
-		strDate = sdf.format(now);
-		System.out.println("\nJava cron job expression: " + strDate + "\n");
-		return strDate;
-	}
-
 	public static int getNumSender() {
 		// จำนวนการส่งสูงสุดของ Sender
 		int sent = 0;
@@ -220,24 +205,9 @@ public class GenReportAndMailProcess {
 
 	}
 
-	public static void main(String[] arg) {
-
-		try {
-			main("true");
-
-		} catch (IOException e) {
-
-			e.printStackTrace();
-		}
-	}
-
-	static int n_reciver;
-
 	public static void loopSend() throws IOException, SQLException {
 
-		// Test
 		System.out.println("\n\nloopDoctor : " + (n_sent + 1) + "\n\n");
-		// -----------------------------------------------------------
 		// รับอีเทล์ sender
 		Properties propSender = Property.getProp("sendersMail");
 		// สร้างตัวแปรสำหรับ sort เรียงลำดับผู้ส่ง
@@ -325,7 +295,7 @@ public class GenReportAndMailProcess {
 												valueJasperFileName.substring(0, valueJasperFileName.length() - 7),
 												code_doctor));
 									} catch (JRException | SQLException e) {
-										// TODO Auto-generated catch block
+
 										e.printStackTrace();
 									}
 
@@ -414,7 +384,7 @@ public class GenReportAndMailProcess {
 		min = min + 2;
 		key = "false";
 
-		main("true");
+		main();
 
 	}
 

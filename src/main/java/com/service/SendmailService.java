@@ -26,7 +26,7 @@ import com.util.Property;
 
 public class SendmailService {
 
-	static Message msg = null;
+	private static Message msg = null;
 
 	public static Session getSession(String userSenderMail, String passwordSenderMail) throws IOException {
 

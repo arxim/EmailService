@@ -10,7 +10,7 @@ import com.util.DbConnector;
 import com.util.Property;
 
 public class DoctorDAO {
-	static ArrayList<HashMap<String, String>> listReciver = null;
+	private static ArrayList<HashMap<String, String>> listReciver = null;
 
 	public static ArrayList<HashMap<String, String>> getReciver() throws SQLException, IOException {
 

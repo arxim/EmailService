@@ -24,7 +24,7 @@ import com.dao.DoctorDAO;
 
 public class CreatePDFService {
 
-	ByteArrayOutputStream pdfOutputStream = null;
+	private ByteArrayOutputStream pdfOutputStream = null;
 
 	// สร้างไฟล์ pdf
 	public ByteArrayOutputStream createFilePDF(List<JasperPrint> listJasper, String passwords) {
