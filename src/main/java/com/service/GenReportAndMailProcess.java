@@ -218,7 +218,7 @@ public class GenReportAndMailProcess {
 
 		List<JasperPrint> listJasper = null;
 
-		// process
+		// processing
 		sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 		now = new Date();
 		strDate = sdf.format(now);
@@ -363,7 +363,7 @@ public class GenReportAndMailProcess {
 
 								if (pass.equals("true")) {
 									DoctorDAO.SendMailPaymentSuccess(code_doctor);
-									System.out.println("success stam reciver from method loopSend()...");
+									System.out.println("success stamp reciver from method loopSend()...");
 								}
 
 							} catch (SQLException | IOException e) {
@@ -383,12 +383,11 @@ public class GenReportAndMailProcess {
 					}
 
 				}
-				System.out.print("\n\n");
 
 			} else {
 				// n_reciver == 0
 				// กรณีไม่มี ผู้รับตั้งแต่เริ่มต้น
-				System.out.println("-----End condition method loopSend() -----");
+				System.out.println("----------End condition method loopSend()----------");
 				break;
 			}
 
@@ -400,9 +399,9 @@ public class GenReportAndMailProcess {
 		// ผลลัพธ์สุดท้าย
 
 		if (n_reciver > 0) {
-			System.out.println("To be con.. next Day");
 			// เพิ่มวันถัดไป
 			day = day + 1;
+			System.out.println("To be con.. next Day " + day);
 		}
 		// สร้าง key = close ปิดkey
 		key = "close";
